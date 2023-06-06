@@ -1,0 +1,34 @@
+{
+    "profiles(permissions=***-)": {
+        "_id[36]": "str<username>",
+        "name[30]": "str",
+        "avatar[10]": "str",
+        "bio[500]": "str",
+        "*userId[36]": "str",
+        "lastOnline": "datetime"
+    },
+    "entities(permissions=****)": {
+        "name[30]": "str",
+        "logo[50]": "str",
+        "isPrivate(default=false)": "bool",
+        "dstEntities[50]": "array"
+    },
+    "messages(permissions=**--)": {
+        "*sourceId[36]": "str",
+        "*text[200]": "str",
+        "replyId[36]": "str",
+        "video[100]": "str",
+        "link": "url",
+        "images[100]": "array",
+        "tags[20]": "array",
+        "lat": "double",
+        "lng": "double",
+        "isPrivate(default=false)": "bool",
+        "isRead(default=false)": "bool",
+        "entitiesId[36]": "str"
+    },
+    "atlas(permissions=***-)": {
+        "tag[20]": "str",
+        "entities[50]": "array"
+    }
+}

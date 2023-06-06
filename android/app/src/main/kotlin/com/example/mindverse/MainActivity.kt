@@ -1,4 +1,4 @@
-package com.example.mindverse
+package com.nashintelli.mindverse
 
 import io.flutter.embedding.android.FlutterActivity
 

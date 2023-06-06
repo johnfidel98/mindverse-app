@@ -1,0 +1,4 @@
+SECRETS_COL_ID=<Secrets Collection ID>
+PROFILES_COL_ID=<Profiles Collection ID>
+HT_FUNCTION_ENDPOINT=http://cloud.appwrite.com/v1
+HT_FUNCTION_API_KEY=<API Key>

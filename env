@@ -1,0 +1,6 @@
+HOST=https://cloud.appwrite.io
+WEBSITE=https://example.com
+PROJECT_ID=<Appwrite Project ID>
+DATABASE_ID=<Appwrite Database ID>
+COLLECTIONS={"messages":"","entities":"", "atlas": "", "profiles": ""}
+STORAGES={"chat_images":"","chat_videos":"","group_logos":""}
