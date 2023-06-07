@@ -160,8 +160,8 @@ class _AvatarSegmentState extends State<AvatarSegment> {
                 ),
                 if (online)
                   Positioned(
-                      bottom: 1,
-                      left: 1,
+                      bottom: 4,
+                      left: 4,
                       child: widget.isCircular
                           ? Container(
                               decoration: const BoxDecoration(

@@ -94,6 +94,7 @@ class Message {
 }
 
 class Conversation {
+  // conversation object
   UserProfile profile;
 
   String? id;
@@ -101,10 +102,53 @@ class Conversation {
   String lastMessage;
   int count;
 
-  Conversation(
-      {required this.profile,
-      this.created,
-      this.id = '',
-      this.lastMessage = '',
-      this.count = 0});
+  Conversation({
+    required this.profile,
+    this.created,
+    this.id = '',
+    this.lastMessage = '',
+    this.count = 0,
+  });
+}
+
+class Group {
+  // groups object
+  List<UserProfile> profiles;
+
+  String? id;
+  String name;
+  DateTime? created;
+  String lastMessage;
+  int count;
+
+  Group({
+    required this.profiles,
+    required this.name,
+    this.created,
+    this.id = '',
+    this.lastMessage = '',
+    this.count = 0,
+  });
+}
+
+class SearchData {
+  // search object
+  UserProfile? profile;
+  Group? group;
+  DateTime created;
+
+  SearchData({this.profile, this.group, required this.created});
+
+  factory SearchData.fromDoc(Document doc) {
+    if (doc.data.containsKey('logo')) {
+      return SearchData(
+        group: Group(name: doc.data['name'], profiles: []),
+        created: DateTime.parse(doc.$createdAt),
+      );
+    }
+    return SearchData(
+      profile: UserProfile.fromDoc(doc),
+      created: DateTime.parse(doc.$createdAt),
+    );
+  }
 }

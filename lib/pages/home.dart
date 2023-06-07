@@ -285,41 +285,6 @@ class RoamCard extends StatelessWidget {
   }
 }
 
-class HomeTitle extends StatelessWidget {
-  const HomeTitle({
-    super.key,
-    required this.title,
-    this.stats,
-    this.statsWidget,
-  });
-
-  final String title;
-  final String? stats;
-  final Widget? statsWidget;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4.0, right: 4.0, top: 20.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(color: htSolid5, fontSize: 24),
-          ),
-          statsWidget != null
-              ? statsWidget!
-              : Text(
-                  stats!,
-                  style: const TextStyle(color: htSolid5, fontSize: 16),
-                ),
-        ],
-      ),
-    );
-  }
-}
-
 class ConversationTile extends StatelessWidget {
   const ConversationTile({
     super.key,
