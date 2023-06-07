@@ -14,7 +14,7 @@ const Color htSolid5 = Color.fromRGBO(27, 54, 94, 1);
 
 const double defaultBorderRadius = 10;
 
-enum MVMenuItem { profile, settings, logout, sponsored }
+enum MVMenuItem { profile, logout }
 
 TextStyle defaultTextStyle = GoogleFonts.overpass(
   textStyle: const TextStyle(

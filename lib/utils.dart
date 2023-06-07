@@ -9,7 +9,6 @@ import 'package:mindverse/constants.dart';
 import 'package:mindverse/controllers.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/pages/profile.dart';
-import 'package:mindverse/pages/settings.dart';
 
 bool hasCharactersValidator(String? nme) =>
     nme != null ? nme.isNotEmpty && nme.length < 30 : false;
@@ -173,9 +172,6 @@ class AccountDropdownSegment extends StatelessWidget {
         // reset all routes to auth
         Get.offAllNamed('/auth');
       });
-    } else if (item == MVMenuItem.settings) {
-      // navigate to settings
-      Get.to(() => const SettingsPage());
     } else if (item == MVMenuItem.profile) {
       // navigate to profile
       Get.to(() =>
@@ -213,17 +209,6 @@ class AccountDropdownSegment extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-        PopupMenuItem<MVMenuItem>(
-          value: MVMenuItem.settings,
-          child: Text(
-            'Settings',
-            style: defaultTextStyle.copyWith(
-              fontSize: 16,
-              height: 1.5,
-              color: htSolid5,
-            ),
           ),
         ),
         PopupMenuItem<MVMenuItem>(
