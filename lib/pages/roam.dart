@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mindverse/constants.dart';
 import 'package:mindverse/utils.dart';
 
 class RoamPage extends StatelessWidget {
@@ -11,9 +12,12 @@ class RoamPage extends StatelessWidget {
       appBar: AppBar(
         leading: const LeadingBack(),
         titleSpacing: 0,
-        title: const Text(
+        title: Text(
           '#RoamAbout',
-          style: TextStyle(color: Colors.black87),
+          style: defaultTextStyle.copyWith(
+            color: Colors.black87,
+            fontSize: 23,
+          ),
         ),
         backgroundColor: Colors.white,
       ),
