@@ -161,10 +161,11 @@ class MVNotification {
   Map? body;
   DateTime created;
 
-  MVNotification(
-      {this.profile,
-      this.title,
-      this.body,
-      required this.created,
-      required this.id});
+  MVNotification({
+    this.profile,
+    this.title,
+    this.body,
+    required this.created,
+    required this.id,
+  });
 }

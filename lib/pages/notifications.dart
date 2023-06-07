@@ -38,7 +38,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
             context: context,
             title: 'Notifications Bomb?',
             msg:
-                'You\'ll have to dismiss the excess notifications to be able to view more! You can use the dismiss all button on the app bar ...');
+                'You\'ll have to dismiss the excess notifications (100+) to be able to view more!',
+            footer:
+                'N/B: You can use the "Dismiss All" button on the app bar (top right).');
         setState(() {
           alertedNotificationBlock = true;
         });
@@ -49,11 +51,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Future dismissNotification(int i, MVNotification n) async =>
       await sc.removeNotification(index: i, docId: n.id).then(
             (_) => ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Dismissed "${n.title}"',
-                ),
-              ),
+              SnackBar(content: Text('Dismissed "${n.title}"')),
             ),
           );
 

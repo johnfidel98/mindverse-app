@@ -345,23 +345,55 @@ void showAlertDialog(
     {required BuildContext context,
     String title = 'Important',
     required String msg,
+    String? footer,
     Function()? onOk}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text(title),
-        content: Text(msg),
+        title: Text(
+          title,
+          style: defaultTextStyle.copyWith(fontSize: 24),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              msg,
+              style: defaultTextStyle.copyWith(fontSize: 16),
+            ),
+            if (footer != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  footer,
+                  style: defaultTextStyle.copyWith(fontSize: 12),
+                ),
+              ),
+          ],
+        ),
         actions: [
           // add buttons to the alert prompt
           TextButton(
-            child: const Text('Cancel'),
+            style: const ButtonStyle(
+                side: MaterialStatePropertyAll(BorderSide(color: htTrans1))),
+            child: Text(
+              'Cancel',
+              style: defaultTextStyle.copyWith(
+                  fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
           TextButton(
-            child: const Text('Ok'),
+            style: const ButtonStyle(
+                backgroundColor: MaterialStatePropertyAll(htTrans1)),
+            child: Text(
+              'Ok',
+              style: defaultTextStyle.copyWith(
+                  fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             onPressed: () {
               // perform any actions you want when the user taps OK
               Navigator.of(context).pop();
