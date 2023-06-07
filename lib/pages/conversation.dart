@@ -64,17 +64,15 @@ class _ConversationPageState extends State<ConversationPage> {
 
     // listen for realtime feed events
     _newMessagesListener = _realtime.subscribe([
-      'databases.${appDetails.databaseId}.collections.${sc.collections['feeds']}.documents',
+      'databases.${appDetails.databaseId}.collections.${sc.collections['messages']}.documents',
     ]);
 
     _newMessagesListener.stream.listen((response) async {
       if (response.events.contains(
-          'databases.*.collections.${sc.collections['feeds']}.documents.*.create')) {
+          'databases.*.collections.${sc.collections['messages']}.documents.*.create')) {
         // check feed
         Map feed = response.payload;
 
-        // check if chat
-        if (feed['isChat']) {
           // check message destined to me
           if (feed['dstProfile']['\$id'] == sc.username.value) {
             // get owner profle
@@ -93,7 +91,7 @@ class _ConversationPageState extends State<ConversationPage> {
             );
             cc.addMessage(msg);
           }
-        }
+        
       }
     });
   }

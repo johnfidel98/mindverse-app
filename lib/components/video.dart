@@ -41,7 +41,6 @@ class _VideoSegmentState extends State<VideoSegment> {
   late VideoPlayerController _controller;
   late ChewieController _chewieController;
 
-  late StreamSubscription _listenerToggle;
   late StreamSubscription _listenerMuter;
 
   bool bufferingVideo = false;
@@ -134,7 +133,6 @@ class _VideoSegmentState extends State<VideoSegment> {
   @override
   void dispose() {
     // dispose listeners and controllers when widget is exiting
-    _listenerToggle.cancel();
     _listenerMuter.cancel();
 
     _chewieController.dispose();

@@ -20,6 +20,7 @@ final List<String> lightProfileColumns = [
 class SessionController extends GetxController {
   var onlineStatus = RxMap({});
 
+  var notifications = RxList([]);
   var profiles = RxMap();
   var prefs = RxMap();
   var userId = ''.obs;
@@ -60,6 +61,38 @@ class SessionController extends GetxController {
   getAppDetails() => _appDetails;
 
   getCollections() => collections;
+
+  Future getNotifications() async {
+    await getDocs(collectionName: 'notifications', queries: [
+      Query.search('destinationId', username.value),
+      Query.orderDesc('\$createdAt'),
+      Query.limit(100),
+    ]).then((res) async {
+      // clear current notifications
+      notifications.clear();
+
+      for (AppwriteModels.Document doc in res.documents) {
+        // sync profile
+        UserProfile profile = await getProfile(uname: doc.data['sourceId']);
+
+        // process notification
+        notifications.add(MVNotification(
+          id: doc.$id,
+          title: doc.data['title'],
+          profile: profile,
+          created: DateTime.parse(doc.$createdAt),
+          body: jsonDecode(doc.data['body']),
+        ));
+      }
+    });
+  }
+
+  Future removeNotification(
+          {required int index, required String docId}) async =>
+      await deleteDoc(collectionName: 'notifications', docId: docId).then((_) {
+        notifications.removeAt(index);
+        notifications.refresh();
+      });
 
   Future setUserDetails() => _account.get().then((account) async {
         // update user details
@@ -209,6 +242,12 @@ class SessionController extends GetxController {
           collectionId: collections[collectionName],
           documentId: docId);
 
+  Future deleteDoc({required String collectionName, required String docId}) =>
+      _database.deleteDocument(
+          databaseId: _appDetails.databaseId,
+          collectionId: collections[collectionName],
+          documentId: docId);
+
   Future updateDoc(
           {required String collectionName,
           required String docId,
@@ -345,9 +384,8 @@ class ChatController extends GetxController {
   Future<AppwriteModels.Document>? getLastConversation(
           {required SessionController ses, required String username}) async =>
       await ses.getDocs(collectionName: 'messages', queries: [
-        Query.equal('isChat', [true]),
-        Query.equal('profile', [ses.username.value, username]),
-        Query.equal('dstProfile', [username, ses.username.value]),
+        Query.equal('sourceId', [ses.username.value, username]),
+        Query.equal('entitiesId', [username, ses.username.value]),
         Query.orderDesc('\$createdAt'),
         Query.limit(1),
       ]).then((docs) => docs.documents.length > 0 ? docs.documents[0] : null);
@@ -358,7 +396,6 @@ class ChatController extends GetxController {
       required bool bottom}) async {
     // define global queries
     List<String> queries = [
-      Query.equal('isChat', [true]),
       Query.equal('profile', [ses.username.value, username]),
       Query.equal('dstProfile', [username, ses.username.value]),
       Query.orderDesc('\$createdAt'),
@@ -432,7 +469,7 @@ class ChatController extends GetxController {
   }
 }
 
-class HTSearchController extends GetxController {
+class MVSearchController extends GetxController {
   var results = <SearchData>[].obs;
   var processedResults = [].obs;
 

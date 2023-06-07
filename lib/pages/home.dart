@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
@@ -6,6 +8,7 @@ import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/components/button.dart';
 import 'package:mindverse/components/text.dart';
 import 'package:mindverse/constants.dart';
+import 'package:mindverse/controllers.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/pages/conversation.dart';
 import 'package:mindverse/pages/notifications.dart';
@@ -21,12 +24,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final SessionController sc = Get.find<SessionController>();
+
+  late Timer _timerNotifications;
+
   @override
   void initState() {
     super.initState();
 
     // remove splash screen
     FlutterNativeSplash.remove();
+
+    // check notifications
+    sc.getNotifications();
+
+    // check notifications after every 10 sec
+    _timerNotifications = Timer.periodic(
+        const Duration(seconds: 10), (_) async => sc.getNotifications());
   }
 
   @override
@@ -53,9 +67,27 @@ class _HomePageState extends State<HomePage> {
                 )),
             IconButton(
                 onPressed: () => Get.to(() => const NotificationsPage()),
-                icon: const Icon(
-                  Icons.notifications,
-                  color: htSolid5,
+                icon: Stack(
+                  children: [
+                    Center(
+                      child: Obx(() => Icon(
+                            sc.notifications.isNotEmpty
+                                ? Icons.notifications
+                                : Icons.notifications_none,
+                            color: htSolid5,
+                          )),
+                    ),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Obx(
+                        () => NumberCircleCount(
+                          value: sc.notifications.length,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ],
                 )),
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 15.0),
@@ -96,6 +128,15 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // dispose active services
+    if (_timerNotifications.isActive) {
+      _timerNotifications.cancel();
+    }
+    super.dispose();
   }
 }
 
@@ -222,8 +263,6 @@ class RoamCard extends StatelessWidget {
               child: Lottie.asset(
                 'assets/lottie/82445-travelers-walking-using-travelrmap-application.json',
                 repeat: true,
-                //fit: BoxFit.cover,
-                //width: MediaQuery.of(context).size.width - 20,
               ),
             ),
             Positioned(
@@ -341,7 +380,7 @@ class ConversationTile extends StatelessWidget {
                   )
                 ],
               ),
-              const NumberCircleCount(value: 30),
+              NumberCircleCount(value: 30),
             ],
           ),
         ),
@@ -447,31 +486,8 @@ class GroupTile extends StatelessWidget {
                 )
               ],
             ),
-            const NumberCircleCount(value: 30),
+            NumberCircleCount(value: 30),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class NumberCircleCount extends StatelessWidget {
-  const NumberCircleCount({
-    super.key,
-    required this.value,
-  });
-
-  final int value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: htSolid5),
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Text(
-          '$value',
-          style: const TextStyle(fontSize: 15, color: Colors.white),
         ),
       ),
     );

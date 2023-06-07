@@ -143,6 +143,8 @@ class _WelcomePageState extends State<WelcomePage> {
                       hintText: 'Username',
                       controller: uc,
                       onChanged: changedUsername,
+                      validator: hasCharactersValidator,
+                      validationMsg: "Kindly set a valid username",
                       prefixIcon: const Icon(
                         Icons.alternate_email,
                         color: htSolid2,

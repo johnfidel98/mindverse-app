@@ -7,7 +7,7 @@
         "*userId[36]": "str",
         "lastOnline": "datetime"
     },
-    "entities(permissions=****)": {
+    "groups(permissions=****)": {
         "name[30]": "str",
         "logo[50]": "str",
         "isPrivate(default=false)": "bool",
@@ -30,5 +30,15 @@
     "atlas(permissions=***-)": {
         "tag[20]": "str",
         "entities[50]": "array"
+    },
+    "secrets(security=true)": {
+        "conversations[50]": "array",
+        "contacts[50]": "array"
+    },
+    "notifications(permissions=-*-*)": {
+        "title[50]": "str",
+        "body[200](default='{}')": "json(str)",
+        "*sourceId[36]": "str",
+        "*destinationId[50]": "str"
     }
 }

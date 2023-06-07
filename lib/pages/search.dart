@@ -19,7 +19,7 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  final HTSearchController sc = Get.put(HTSearchController());
+  final MVSearchController sc = Get.put(MVSearchController());
   final SessionController ses = Get.find<SessionController>();
   final TextEditingController qc = TextEditingController();
 

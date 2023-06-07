@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/constants.dart';
 import 'package:mindverse/controllers.dart';
@@ -85,6 +87,63 @@ class CloseCircleButton extends StatelessWidget {
         splashRadius: 50,
         onPressed: () => Navigator.pop(context),
         icon: const Icon(Icons.close_rounded, color: htSolid4),
+      ),
+    );
+  }
+}
+
+class NumberCircleCount extends StatelessWidget {
+  NumberCircleCount({
+    super.key,
+    required this.value,
+    this.fontSize = 15,
+  });
+
+  final int value;
+  final double fontSize;
+
+  final numberFormat = NumberFormat.compact(locale: 'en_US');
+
+  @override
+  Widget build(BuildContext context) {
+    return value == 0
+        ? const SizedBox()
+        : Container(
+            decoration:
+                const BoxDecoration(shape: BoxShape.circle, color: htSolid4),
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Text(
+                numberFormat.format(value),
+                style: TextStyle(fontSize: fontSize, color: Colors.white),
+              ),
+            ),
+          );
+  }
+}
+
+class EmptyDone extends StatelessWidget {
+  const EmptyDone({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height - 50,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Lottie.asset(
+            'assets/lottie/104297-completed-icon.json',
+            repeat: false,
+          ),
+          const SizedBox(height: 40),
+          Text(
+            'All Caught Up',
+            style: defaultTextStyle.copyWith(fontSize: 30),
+          ),
+        ],
       ),
     );
   }
