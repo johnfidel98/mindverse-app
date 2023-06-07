@@ -340,3 +340,40 @@ void releaseFocus({required BuildContext context, Function? onTappedOutside}) {
   }
   onTappedOutside != null ? onTappedOutside() : null;
 }
+
+void showAlertDialog(
+    {required BuildContext context,
+    String title = 'Important',
+    required String msg,
+    Function()? onOk}) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(msg),
+        actions: [
+          // add buttons to the alert prompt
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Ok'),
+            onPressed: () {
+              // perform any actions you want when the user taps OK
+              Navigator.of(context).pop();
+
+              if (onOk != null) {
+                // execute ok task
+                onOk();
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}

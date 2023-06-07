@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
 import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/models.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -18,12 +19,31 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   final SessionController sc = Get.find<SessionController>();
 
+  late StreamSubscription _listenerNotifications;
+  bool alertedNotificationBlock = false;
+
   @override
   void initState() {
     super.initState();
 
     // get notifications once only as home page is aleady checking every 10s
     sc.getNotifications();
+
+    // listen for notification events
+    _listenerNotifications = sc.notifications.listen((data) {
+      // check if there are more than 100 notifications
+      if (data.length > 100 && !alertedNotificationBlock) {
+        // notify user of issue
+        showAlertDialog(
+            context: context,
+            title: 'Notifications Bomb?',
+            msg:
+                'You\'ll have to dismiss the excess notifications to be able to view more! You can use the dismiss all button on the app bar ...');
+        setState(() {
+          alertedNotificationBlock = true;
+        });
+      }
+    });
   }
 
   Future dismissNotification(int i, MVNotification n) async =>
@@ -105,6 +125,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // discard active subscriptions and services
+    _listenerNotifications.cancel();
+
+    super.dispose();
   }
 }
 
