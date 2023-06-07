@@ -272,25 +272,22 @@ class NamingSegment extends StatelessWidget {
     return [
       Text(
         owner.name, //'owner.name h rt r h tbhebrb erbbw',
-        style: GoogleFonts.overpass(
-            textStyle: TextStyle(
+        style: defaultTextStyle.copyWith(
           fontSize: size,
           color: htSolid4,
           height: height,
           fontWeight: FontWeight.w600,
-        )),
+        ),
         overflow: TextOverflow.ellipsis,
       ),
       const SizedBox(width: 5),
       Text(
         '@${owner.username}',
-        style: GoogleFonts.overpass(
-            textStyle: TextStyle(
-          inherit: true,
+        style: defaultTextStyle.copyWith(
           fontSize: size - fontDiff,
           color: usernameColor,
           height: height,
-        )),
+        ),
       ),
     ];
   }

@@ -175,7 +175,7 @@ class _AuthPageState extends State<AuthPage> {
               return Stack(
                 children: [
                   Image.asset(
-                    'assets/images/pexels-adrien-olichon-3137073.jpg',
+                    'assets/images/pexels-adrien-olichon-3137056.jpg',
                     height: MediaQuery.of(context).size.height,
                     fit: BoxFit.cover,
                   ),
@@ -296,7 +296,7 @@ class _AuthInputState extends State<AuthInput> {
           decoration: const BoxDecoration(
               color: Colors.white70,
               borderRadius:
-                  BorderRadius.all(Radius.circular(objectsBorderRadius))),
+                  BorderRadius.all(Radius.circular(defaultBorderRadius))),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -309,7 +309,7 @@ class _AuthInputState extends State<AuthInput> {
                         : "Hmmm, nice of you to join us!",
                 style: const TextStyle(
                   fontSize: 18,
-                  color: Color.fromARGB(255, 92, 92, 92),
+                  color: htSolid5,
                 ),
               ),
               const SizedBox(height: 10),

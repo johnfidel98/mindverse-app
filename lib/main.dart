@@ -10,6 +10,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:mindverse/pages/auth.dart';
 import 'package:mindverse/pages/conversation.dart';
 import 'package:mindverse/pages/home.dart';
+import 'package:mindverse/pages/notifications.dart';
 import 'package:mindverse/pages/profile.dart';
 import 'package:mindverse/pages/roam.dart';
 import 'package:mindverse/pages/search.dart';
@@ -89,6 +90,7 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(name: '/profile', page: () => ProfilePage(profile: profile)),
         GetPage(name: '/settings', page: () => const SettingsPage()),
+        GetPage(name: '/notifications', page: () => const NotificationsPage()),
         GetPage(name: '/search', page: () => const SearchPage()),
         GetPage(name: '/roam', page: () => const RoamPage()),
       ],

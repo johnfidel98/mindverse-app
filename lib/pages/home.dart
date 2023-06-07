@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/components/button.dart';
 import 'package:mindverse/components/text.dart';
 import 'package:mindverse/constants.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/pages/conversation.dart';
+import 'package:mindverse/pages/notifications.dart';
+import 'package:mindverse/pages/roam.dart';
+import 'package:mindverse/pages/search.dart';
 import 'package:mindverse/utils.dart';
 
 class HomePage extends StatefulWidget {
@@ -33,22 +37,22 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         backgroundColor: Colors.grey[300],
         appBar: AppBar(
-          title: const Padding(
-            padding: EdgeInsets.only(left: 8.0),
+          title: Padding(
+            padding: const EdgeInsets.only(left: 8.0),
             child: Text(
               'MindVerse',
-              style: TextStyle(color: htSolid4, fontSize: 26),
+              style: defaultTextStyle.copyWith(color: htSolid5, fontSize: 28),
             ),
           ),
           actions: [
             IconButton(
-                onPressed: () {},
+                onPressed: () => Get.to(() => const SearchPage()),
                 icon: const Icon(
                   Icons.search,
                   color: htSolid5,
                 )),
             IconButton(
-                onPressed: () {},
+                onPressed: () => Get.to(() => const NotificationsPage()),
                 icon: const Icon(
                   Icons.notifications,
                   color: htSolid5,
@@ -64,14 +68,17 @@ class _HomePageState extends State<HomePage> {
         body: const HomeLayout(),
         bottomNavigationBar: Container(
           color: Colors.white,
-          child: const TabBar(
+          child: TabBar(
+            labelStyle: defaultTextStyle.copyWith(height: 1.3, fontSize: 15),
+            unselectedLabelStyle:
+                defaultTextStyle.copyWith(height: 1.3, fontSize: 14),
             labelColor: htSolid5,
-            indicator: BoxDecoration(
+            indicator: const BoxDecoration(
               border: Border(
                 top: BorderSide(color: htSolid4, width: 1),
               ),
             ),
-            tabs: [
+            tabs: const [
               Tab(
                 text: 'Contacts',
                 icon: Icon(Icons.contacts),
@@ -138,7 +145,7 @@ class _HomeLayoutState extends State<HomeLayout> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                HomeTitle(title: 'Roam', stats: '200k Online'),
+                RoamCard(),
                 HomeTitle(
                   title: 'Conversations',
                   statsWidget: InterfaceButton(
@@ -162,7 +169,7 @@ class _HomeLayoutState extends State<HomeLayout> {
         ),
         SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -188,6 +195,92 @@ class _HomeLayoutState extends State<HomeLayout> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class RoamCard extends StatelessWidget {
+  const RoamCard({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.to(() => const RoamPage()),
+      child: Card(
+        child: Stack(
+          children: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: 200,
+            ),
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: Lottie.asset(
+                'assets/lottie/82445-travelers-walking-using-travelrmap-application.json',
+                repeat: true,
+                //fit: BoxFit.cover,
+                //width: MediaQuery.of(context).size.width - 20,
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              child: Container(
+                width: MediaQuery.of(context).size.width - 20,
+                clipBehavior: Clip.antiAlias,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment(0.0, -1.0),
+                    end: Alignment(0.0, 1.0),
+                    colors: [
+                      Colors.white10,
+                      Colors.white60,
+                      Colors.white,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(5),
+                    bottomRight: Radius.circular(5),
+                  ),
+                ),
+                padding: const EdgeInsets.only(
+                  top: 30,
+                  bottom: 6,
+                  left: 10,
+                  right: 10,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '#RoamAbout',
+                      style: defaultTextStyle.copyWith(
+                        fontSize: 25,
+                        height: 1.2,
+                        color: htSolid5,
+                      ),
+                    ),
+                    const Text(
+                      'Navigate tags of interest and join conversations with respective parties!',
+                      style: TextStyle(
+                        fontSize: 15,
+                        height: 1.4,
+                        color: htSolid3,
+                      ),
+                      overflow: TextOverflow.clip,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -320,12 +413,13 @@ class ContactTile extends StatelessWidget {
                     children: [
                       Text(
                         '+234 54546 65656',
-                        style: TextStyle(fontSize: 12, height: 1.2),
+                        style: TextStyle(
+                            fontSize: 12, height: 1.2, color: htSolid4),
                       ),
                       Text(
                         'Jack Burrows',
                         style: TextStyle(
-                            fontSize: 22, height: 1.4, color: htSolid3),
+                            fontSize: 18, height: 1.4, color: htSolid5),
                       ),
                     ],
                   ),

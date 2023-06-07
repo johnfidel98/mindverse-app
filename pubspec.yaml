@@ -33,6 +33,7 @@ dependencies:
   photo_view: ^0.14.0
   sliding_up_panel: ^2.0.0+1
   flutter_keyboard_visibility: ^5.4.1
+  lottie: ^2.4.0
 
 dev_dependencies:
   flutter_test:
@@ -45,3 +46,4 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/lottie/

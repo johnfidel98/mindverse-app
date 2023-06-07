@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mindverse/utils.dart';
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+class NotificationsPage extends StatelessWidget {
+  const NotificationsPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +12,7 @@ class SettingsPage extends StatelessWidget {
         leading: const LeadingBack(),
         titleSpacing: 0,
         title: const Text(
-          'Settings',
+          'Notifications',
           style: TextStyle(color: Colors.black87),
         ),
         backgroundColor: Colors.white,

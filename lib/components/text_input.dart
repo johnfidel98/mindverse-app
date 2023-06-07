@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mindverse/constants.dart';
+import 'package:mindverse/utils.dart';
 
 class MVTextInput extends StatefulWidget {
   final String hintText;
@@ -60,7 +61,7 @@ class _MVTextInputState extends State<MVTextInput> {
   @override
   Widget build(BuildContext context) {
     OutlineInputBorder defaultBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(objectsBorderRadius),
+      borderRadius: BorderRadius.circular(defaultBorderRadius),
       borderSide: const BorderSide(
         color: htSolid3,
       ),
@@ -77,15 +78,10 @@ class _MVTextInputState extends State<MVTextInput> {
             ? (input) => widget.validator!(input) ? null : widget.validationMsg
             : null,
         onTap: () => widget.onTapped != null ? widget.onTapped!() : null,
-        onTapOutside: (event) {
-          FocusScopeNode currentFocus = FocusScope.of(context);
-
-          if (!currentFocus.hasPrimaryFocus &&
-              currentFocus.focusedChild != null) {
-            FocusManager.instance.primaryFocus?.unfocus();
-          }
-          widget.onTappedOutside != null ? widget.onTappedOutside!() : null;
-        },
+        onTapOutside: (event) => releaseFocus(
+          context: context,
+          onTappedOutside: widget.onTappedOutside,
+        ),
         controller: widget.controller,
         keyboardType: widget.inputType ?? TextInputType.text,
         obscureText: widget.hintText.contains('Password')
@@ -113,6 +109,7 @@ class _MVTextInputState extends State<MVTextInput> {
                   onPressed: togglePassword,
                   icon: Icon(
                     showPassword ? Icons.visibility_off : Icons.visibility,
+                    color: htSolid3,
                   ),
                 )
               : widget.suffixWidget,
@@ -126,17 +123,17 @@ class _MVTextInputState extends State<MVTextInput> {
           ),
           enabledBorder: widget.activeBorder ?? defaultBorder,
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(objectsBorderRadius),
+            borderRadius: BorderRadius.circular(defaultBorderRadius),
             borderSide: const BorderSide(color: htSolid4),
           ),
           errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(objectsBorderRadius),
+            borderRadius: BorderRadius.circular(defaultBorderRadius),
             borderSide: const BorderSide(
               color: Colors.redAccent,
             ),
           ),
           focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(objectsBorderRadius),
+            borderRadius: BorderRadius.circular(defaultBorderRadius),
             borderSide: const BorderSide(color: Colors.red, width: 2),
           ),
           fillColor: Colors.white,
@@ -179,15 +176,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
           maxLines: 5,
           minLines: 1,
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          onTapOutside: (event) {
-            // remove keyboard from focus
-            FocusScopeNode currentFocus = FocusScope.of(context);
-
-            if (!currentFocus.hasPrimaryFocus &&
-                currentFocus.focusedChild != null) {
-              FocusManager.instance.primaryFocus?.unfocus();
-            }
-          },
+          onTapOutside: (event) => releaseFocus(context: context),
           controller: ec,
           keyboardType: TextInputType.text,
           style: GoogleFonts.overpass(

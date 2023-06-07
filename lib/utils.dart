@@ -195,7 +195,7 @@ class AccountDropdownSegment extends StatelessWidget {
               Obx(
                 () => Text(
                   "@${session.username}",
-                  style: const TextStyle(
+                  style: defaultTextStyle.copyWith(
                     fontSize: 12,
                     height: 1.2,
                     color: Colors.black54,
@@ -205,9 +205,9 @@ class AccountDropdownSegment extends StatelessWidget {
               Obx(
                 () => Text(
                   session.name.value,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    height: 1.5,
+                  style: defaultTextStyle.copyWith(
+                    fontSize: 16,
+                    height: 1.4,
                     color: htSolid5,
                   ),
                 ),
@@ -215,13 +215,27 @@ class AccountDropdownSegment extends StatelessWidget {
             ],
           ),
         ),
-        const PopupMenuItem<MVMenuItem>(
+        PopupMenuItem<MVMenuItem>(
           value: MVMenuItem.settings,
-          child: Text('Settings'),
+          child: Text(
+            'Settings',
+            style: defaultTextStyle.copyWith(
+              fontSize: 16,
+              height: 1.5,
+              color: htSolid5,
+            ),
+          ),
         ),
-        const PopupMenuItem<MVMenuItem>(
+        PopupMenuItem<MVMenuItem>(
           value: MVMenuItem.logout,
-          child: Text('Logout'),
+          child: Text(
+            'Logout',
+            style: defaultTextStyle.copyWith(
+              fontSize: 16,
+              height: 1.5,
+              color: htSolid5,
+            ),
+          ),
         ),
       ],
       onSelected: (selected) => navMenu(context, session, selected),
@@ -236,4 +250,14 @@ class AccountDropdownSegment extends StatelessWidget {
       ),
     );
   }
+}
+
+void releaseFocus({required BuildContext context, Function? onTappedOutside}) {
+  // release input widget from focus
+  FocusScopeNode currentFocus = FocusScope.of(context);
+
+  if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+  onTappedOutside != null ? onTappedOutside() : null;
 }

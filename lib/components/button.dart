@@ -80,7 +80,7 @@ class _MVButtonState extends State<MVButton> {
                   EdgeInsets.symmetric(vertical: 15)),
               shape: MaterialStatePropertyAll(
                 RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(objectsBorderRadius),
+                  borderRadius: BorderRadius.circular(defaultBorderRadius),
                 ),
               ),
               elevation: const MaterialStatePropertyAll(3),
@@ -136,7 +136,7 @@ class InterfaceButton extends StatelessWidget {
             elevation: const MaterialStatePropertyAll(2),
             overlayColor: const MaterialStatePropertyAll(htTrans1),
             backgroundColor:
-                MaterialStatePropertyAll(alt! ? htSolid2 : htSolid4),
+                MaterialStatePropertyAll(alt! ? htSolid2 : htSolid3),
             padding: const MaterialStatePropertyAll(
               EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
             ),
@@ -157,7 +157,7 @@ class InterfaceButton extends StatelessWidget {
                 label,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.overpass(
-                  textStyle: const TextStyle(
+                  textStyle: defaultTextStyle.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
