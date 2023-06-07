@@ -134,135 +134,139 @@ class _AvatarSegmentState extends State<AvatarSegment> {
           fontSize: widget.boxed ? 14 : 20,
           height: widget.boxed ? 1.1 : 1.2),
     );
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            shape: widget.isCircular ? BoxShape.circle : BoxShape.rectangle,
-            color: htSolid1,
-            border: Border.all(
-              width: 1,
-              color: htSolid4,
-              strokeAlign: BorderSide.strokeAlignOutside,
+    return SizedBox(
+      width: widget.size,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: widget.isCircular ? BoxShape.circle : BoxShape.rectangle,
+              color: htSolid1,
+              border: Border.all(
+                width: 1,
+                color: htSolid4,
+                strokeAlign: BorderSide.strokeAlignOutside,
+              ),
+            ),
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            child: Stack(
+              children: [
+                Image.asset(
+                  'assets/images/user.png',
+                  height: widget.size,
+                  width: widget.size,
+                  fit: BoxFit.contain,
+                ),
+                if (online)
+                  Positioned(
+                      bottom: 1,
+                      left: 1,
+                      child: widget.isCircular
+                          ? Container(
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                color: htSolid4,
+                              ),
+                              height: widget.size / 4,
+                              width: widget.size / 4,
+                            )
+                          : OnlineIndicator(size: widget.size / 4)),
+                Positioned(
+                  child: widget.overlayIcon != null
+                      ? Container(
+                          width: widget.size,
+                          height: widget.size,
+                          color: Colors.black26,
+                          child: widget.overlayIcon,
+                        )
+                      : const SizedBox(),
+                ),
+              ],
             ),
           ),
-          clipBehavior: Clip.antiAliasWithSaveLayer,
-          child: Stack(
-            children: [
-              Image.asset(
-                'assets/images/user.png',
-                height: widget.size,
-                width: widget.size,
-                fit: BoxFit.contain,
-              ),
-              if (online)
-                Positioned(
-                    bottom: 1,
-                    left: 1,
-                    child: widget.isCircular
-                        ? Container(
-                            decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                              color: htSolid4,
-                            ),
-                            height: widget.size / 4,
-                            width: widget.size / 4,
-                          )
-                        : OnlineIndicator(size: widget.size / 4)),
-              Positioned(
-                child: widget.overlayIcon != null
-                    ? Container(
-                        width: widget.size,
-                        height: widget.size,
-                        color: Colors.black26,
-                        child: widget.overlayIcon,
-                      )
-                    : const SizedBox(),
-              ),
-            ],
-          ),
-        ),
-        widget.expanded
-            ? Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width - 150,
-                  height: widget.size,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        top: widget.boxed ? 5 : 8,
-                        child: Text(
-                          "@${widget.userProfile.username}",
-                          style: GoogleFonts.overpass(
-                              textStyle: TextStyle(
-                                  fontWeight: FontWeight.w300,
-                                  fontSize: widget.boxed ? 10 : 12,
-                                  color: widget.usernameColor,
-                                  height: widget.boxed ? 0.6 : 0.4)),
-                        ),
-                      ),
-                      Positioned(
-                        top: widget.boxed ? 12 : 14,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            widget.userProfile.username == sc.username.value
-                                ? Obx(() =>
-                                    Text(sc.name.value, style: titleStyle))
-                                : Text(widget.userProfile.name,
-                                    style: titleStyle),
-                            widget.extra != null
-                                ? Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 5.0, top: 2),
-                                    child: Text(
-                                      widget.extra!,
-                                      style: GoogleFonts.overpass(
-                                          textStyle: TextStyle(
-                                              fontWeight: FontWeight.w300,
-                                              fontSize: widget.boxed ? 12 : 16,
-                                              height:
-                                                  widget.boxed ? 1.0 : 1.3)),
-                                    ),
-                                  )
-                                : const SizedBox(),
-                          ],
-                        ),
-                      ),
-                      if (widget.time != null)
+          widget.expanded
+              ? Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width - 150,
+                    height: widget.size,
+                    child: Stack(
+                      children: [
                         Positioned(
-                          bottom: widget.boxed ? 0 : 10,
+                          top: widget.boxed ? 5 : 8,
+                          child: Text(
+                            "@${widget.userProfile.username}",
+                            style: GoogleFonts.overpass(
+                                textStyle: TextStyle(
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: widget.boxed ? 10 : 12,
+                                    color: widget.usernameColor,
+                                    height: widget.boxed ? 0.6 : 0.4)),
+                          ),
+                        ),
+                        Positioned(
+                          top: widget.boxed ? 12 : 14,
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.history,
-                                size: widget.boxed ? 12 : 14,
-                                color: widget.userDetailsColor,
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                timeago.format(
-                                    DateTime.parse(widget.time.toString())),
-                                style: TextStyle(
-                                  inherit: true,
-                                  color: widget.userDetailsColor,
-                                  fontSize: widget.boxed ? 10 : 13,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
+                              widget.userProfile.username == sc.username.value
+                                  ? Obx(() =>
+                                      Text(sc.name.value, style: titleStyle))
+                                  : Text(widget.userProfile.name,
+                                      style: titleStyle),
+                              widget.extra != null
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 5.0, top: 2),
+                                      child: Text(
+                                        widget.extra!,
+                                        style: GoogleFonts.overpass(
+                                            textStyle: TextStyle(
+                                                fontWeight: FontWeight.w300,
+                                                fontSize:
+                                                    widget.boxed ? 12 : 16,
+                                                height:
+                                                    widget.boxed ? 1.0 : 1.3)),
+                                      ),
+                                    )
+                                  : const SizedBox(),
                             ],
                           ),
                         ),
-                    ],
+                        if (widget.time != null)
+                          Positioned(
+                            bottom: widget.boxed ? 0 : 10,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.history,
+                                  size: widget.boxed ? 12 : 14,
+                                  color: widget.userDetailsColor,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  timeago.format(
+                                      DateTime.parse(widget.time.toString())),
+                                  style: TextStyle(
+                                    inherit: true,
+                                    color: widget.userDetailsColor,
+                                    fontSize: widget.boxed ? 10 : 13,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-              )
-            : const SizedBox(),
-      ],
+                )
+              : const SizedBox(),
+        ],
+      ),
     );
   }
 

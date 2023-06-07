@@ -98,7 +98,7 @@ class _MVButtonState extends State<MVButton> {
         Positioned(
           bottom: 5,
           child: SizedBox(
-            width: MediaQuery.of(context).size.width - 70,
+            width: MediaQuery.of(context).size.width - 140,
             child: _loading
                 ? const LinearProgressIndicator(
                     minHeight: 1,
