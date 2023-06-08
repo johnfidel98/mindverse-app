@@ -3,14 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
-import 'package:mindverse/components/button.dart';
 import 'package:mindverse/constants.dart';
-import 'package:mindverse/controllers.dart';
+import 'package:mindverse/controllers/chat.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/pages/homeTabs/contacts.dart';
 import 'package:mindverse/pages/homeTabs/conversations.dart';
 import 'package:mindverse/pages/homeTabs/groups.dart';
 import 'package:mindverse/pages/notifications.dart';
-import 'package:mindverse/pages/roam.dart';
 import 'package:mindverse/pages/search.dart';
 import 'package:mindverse/utils.dart';
 
@@ -23,10 +22,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final SessionController sc = Get.find<SessionController>();
-  final ChatController cc = Get.find<ChatController>();
+  final ChatController cc = Get.put(ChatController());
 
   late Timer _timerNotifications;
   late Timer _timerGroupsUpdate;
+  late Timer _timerConversationsUpdate;
 
   @override
   void initState() {
@@ -38,19 +38,28 @@ class _HomePageState extends State<HomePage> {
     // check notifications
     sc.getNotifications();
 
+    // get personal conversations
+    cc.getConversations(sc: sc, username: sc.username.value);
+
+    _timerConversationsUpdate = Timer.periodic(
+        const Duration(seconds: 15),
+        (_) async =>
+            // update conversations
+            await cc.getConversations(sc: sc, username: sc.username.value));
+
     // check notifications after every 10 sec
     _timerNotifications = Timer.periodic(
-        const Duration(seconds: 10),
+        const Duration(seconds: 20),
         (_) async =>
             // check notifications
             await sc.getNotifications());
 
     // setup timer to refresh groups listings every 25 seconds
     _timerGroupsUpdate = Timer.periodic(
-        const Duration(seconds: 25),
+        const Duration(seconds: 50),
         (_) async =>
-            // get groups where im member
-            await sc.getGroups(chatController: cc));
+            // update groups where im member
+            await cc.getGroups(sc: sc));
   }
 
   @override
@@ -107,67 +116,11 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.white,
           titleSpacing: 3,
         ),
-        body: TabBarView(
+        body: const TabBarView(
           children: [
-            SingleChildScrollView(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    HomeTitle(title: 'Contacts', stats: '20 Total'),
-                    ContactTile(),
-                    ContactTile(),
-                    ContactTile(),
-                    HomeTitle(
-                      title: 'Unknown',
-                      statsWidget: InterfaceButton(
-                        label: 'Sync Contacts',
-                        icon: Icons.sync,
-                        onPressed: () {},
-                      ),
-                    ),
-                    ContactTile(),
-                    ContactTile(),
-                    ContactTile(),
-                    ContactTile(),
-                    ContactTile(),
-                    ContactTile(),
-                  ],
-                ),
-              ),
-            ),
-            SingleChildScrollView(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RoamCard(),
-                    HomeTitle(
-                      title: 'Conversations',
-                      statsWidget: InterfaceButton(
-                        label: 'Start',
-                        icon: Icons.add,
-                        onPressed: () {},
-                      ),
-                    ),
-                    ConversationTile(),
-                    ConversationTile(),
-                    ConversationTile(),
-                    ConversationTile(),
-                    ConversationTile(),
-                    ConversationTile(),
-                    ConversationTile(),
-                    ConversationTile(),
-                    ConversationTile(),
-                  ],
-                ),
-              ),
-            ),
-            const HomeGroupsTab(),
+            ContactsTab(),
+            ConversationsTab(),
+            GroupsTab(),
           ],
         ),
         bottomNavigationBar: Container(
@@ -207,6 +160,10 @@ class _HomePageState extends State<HomePage> {
     // dispose active services
     if (_timerNotifications.isActive) {
       _timerNotifications.cancel();
+    }
+
+    if (_timerConversationsUpdate.isActive) {
+      _timerConversationsUpdate.cancel();
     }
 
     if (_timerGroupsUpdate.isActive) {

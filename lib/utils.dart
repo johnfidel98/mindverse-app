@@ -8,7 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/constants.dart';
-import 'package:mindverse/controllers.dart';
+import 'package:mindverse/controllers/chat.dart';
+import 'package:mindverse/controllers/search.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/pages/profile.dart';
 
@@ -92,8 +94,48 @@ class CloseCircleButton extends StatelessWidget {
   }
 }
 
+class GeneralLoading extends StatelessWidget {
+  // app loading progress ring
+  const GeneralLoading({
+    super.key,
+    this.artifacts = '...',
+  });
+
+  final String? artifacts;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(
+            height: 180,
+            width: 180,
+            child: CircularProgressIndicator(
+              color: htSolid5,
+              strokeWidth: 1,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 50.0),
+            child: Text(
+              'Loading $artifacts',
+              style: const TextStyle(
+                fontSize: 24,
+                color: htSolid5,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
 class NumberCircleCount extends StatelessWidget {
-  NumberCircleCount({
+  const NumberCircleCount({
     super.key,
     required this.value,
     this.fontSize = 15,
@@ -101,8 +143,6 @@ class NumberCircleCount extends StatelessWidget {
 
   final int value;
   final double fontSize;
-
-  final numberFormat = NumberFormat.compact(locale: 'en_US');
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +158,7 @@ class NumberCircleCount extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Text(
-                numberFormat.format(value),
+                value > 10 ? '10+' : '$value',
                 style: TextStyle(fontSize: fontSize, color: Colors.white),
               ),
             ),
@@ -170,9 +210,8 @@ class EmptyMsg extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: htSolid1,
       padding: const EdgeInsets.all(20),
-      height: MediaQuery.of(context).size.height - 50,
+      // height: MediaQuery.of(context).size.height - 50,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -318,6 +357,7 @@ class AccountDropdownSegment extends StatelessWidget {
       BuildContext context, SessionController session, MVMenuItem item) {
     if (item == MVMenuItem.logout) {
       session.logout().then((_) {
+        // notify user
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Successfully logged out!")),
         );

@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mindverse/controllers/chat.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/components/button.dart';
 import 'package:mindverse/components/text_input.dart';
 import 'package:mindverse/constants.dart';
-import 'package:mindverse/controllers.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/utils.dart';
 
-class HomeGroupsTab extends StatefulWidget {
-  const HomeGroupsTab({Key? key}) : super(key: key);
+class GroupsTab extends StatefulWidget {
+  const GroupsTab({Key? key}) : super(key: key);
 
   @override
-  State<HomeGroupsTab> createState() => _HomeGroupsTabState();
+  State<GroupsTab> createState() => _GroupsTabState();
 }
 
-class _HomeGroupsTabState extends State<HomeGroupsTab> {
+class _GroupsTabState extends State<GroupsTab> {
   final SessionController sc = Get.find<SessionController>();
   final ChatController cc = Get.find<ChatController>();
 
@@ -30,7 +31,7 @@ class _HomeGroupsTabState extends State<HomeGroupsTab> {
     super.initState();
 
     // get groups where im member
-    sc.getGroups(chatController: cc);
+    cc.getGroups(sc: sc);
 
     // listen to group name changes
     gc.addListener(onGroupNameChanged);
@@ -81,7 +82,7 @@ class _HomeGroupsTabState extends State<HomeGroupsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => sc.groups.isNotEmpty
+    return Obx(() => cc.groups.isNotEmpty
         ? SingleChildScrollView(
             child: Padding(
               padding:
@@ -96,9 +97,9 @@ class _HomeGroupsTabState extends State<HomeGroupsTab> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const ClampingScrollPhysics(),
-                    itemCount: sc.groups.length,
+                    itemCount: cc.groups.length,
                     itemBuilder: (BuildContext context, int index) {
-                      Group g = sc.groups[index];
+                      Group g = cc.groups[index];
                       return GroupTile(
                         lastProfile: g.lastProfile,
                         posted: g.created,
@@ -112,12 +113,19 @@ class _HomeGroupsTabState extends State<HomeGroupsTab> {
               ),
             ),
           )
-        : EmptyMsg(
-            lottiePath: 'assets/lottie/16952-group-working.json',
-            title: 'Groups',
-            message: 'Connect and discuss with several like minded people!',
-            child: getGroupsAction(),
-          ));
+        : cc.loadingGroups.value && !cc.firstLoadGroups.value
+            ? const Padding(
+                padding: EdgeInsets.only(top: 30),
+                child: GeneralLoading(
+                  artifacts: 'Groups',
+                ),
+              )
+            : EmptyMsg(
+                lottiePath: 'assets/lottie/16952-group-working.json',
+                title: 'Groups',
+                message: 'Connect and discuss with several like minded people!',
+                child: getGroupsAction(),
+              ));
   }
 
   InterfaceButton getGroupsAction() => InterfaceButton(
@@ -169,7 +177,7 @@ class GroupTile extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        grpName,
+                        lastProfile != null ? grpName : 'New Group',
                         style: const TextStyle(fontSize: 12, color: htSolid4),
                       ),
                       Row(
@@ -182,28 +190,47 @@ class GroupTile extends StatelessWidget {
                                     ? lastProfile!.avatar
                                     : 'assets/images/user.png'),
                           if (lastProfile != null) const SizedBox(width: 5),
-                          Text(
-                            lastMsg,
-                            style: TextStyle(
-                                fontStyle: lastProfile != null
-                                    ? null
-                                    : FontStyle.italic,
-                                fontSize: 17,
-                                color:
-                                    lastProfile != null ? htSolid5 : htSolid2,
-                                height: lastProfile != null ? null : 1.5),
-                          ),
+                          lastProfile != null
+                              ? Text(
+                                  lastMsg,
+                                  style: TextStyle(
+                                      fontStyle: lastProfile != null
+                                          ? null
+                                          : FontStyle.italic,
+                                      fontSize: 18,
+                                      color: lastProfile != null
+                                          ? htSolid5
+                                          : htSolid2,
+                                      height: lastProfile != null ? null : 1.5),
+                                )
+                              : Text(
+                                  grpName,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: htSolid4,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ],
                       ),
-                      if (posted != null)
-                        Text(
-                          timeago.format(posted!),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            height: 1.4,
-                            color: htSolid2,
-                          ),
-                        )
+                      posted != null
+                          ? Text(
+                              timeago.format(posted!),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                height: 1.4,
+                                color: htSolid2,
+                              ),
+                            )
+                          : Text(
+                              lastMsg,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                height: 1.4,
+                                color: htSolid2,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            )
                     ],
                   ),
                 )

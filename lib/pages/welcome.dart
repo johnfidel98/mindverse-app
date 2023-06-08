@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:mindverse/components/button.dart';
 import 'package:mindverse/components/text_input.dart';
 import 'package:mindverse/constants.dart';
-import 'package:mindverse/controllers.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/pages/auth.dart';
 import 'package:mindverse/pages/home.dart';
 import 'package:mindverse/utils.dart';

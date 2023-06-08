@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mindverse/constants.dart';
-import 'package:mindverse/controllers.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';

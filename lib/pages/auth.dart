@@ -6,7 +6,7 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:mindverse/components/button.dart';
 import 'package:mindverse/components/text_input.dart';
 import 'package:mindverse/constants.dart';
-import 'package:mindverse/controllers.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/pages/home.dart';
 import 'package:mindverse/pages/welcome.dart';
 

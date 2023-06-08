@@ -97,16 +97,14 @@ class Conversation {
   // conversation object
   UserProfile profile;
 
-  String? id;
-  DateTime? created;
-  String lastMessage;
+  DateTime created;
+  String? lastMessage;
   int count;
 
   Conversation({
     required this.profile,
-    this.created,
-    this.id = '',
-    this.lastMessage = '',
+    required this.created,
+    this.lastMessage,
     this.count = 0,
   });
 }

@@ -3,6 +3,45 @@ import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/components/button.dart';
 import 'package:mindverse/constants.dart';
 import 'package:mindverse/models.dart';
+import 'package:mindverse/utils.dart';
+
+class ContactsTab extends StatelessWidget {
+  const ContactsTab({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            HomeTitle(title: 'Contacts', stats: '20 Total'),
+            ContactTile(),
+            ContactTile(),
+            ContactTile(),
+            HomeTitle(
+              title: 'Unknown',
+              statsWidget: InterfaceButton(
+                label: 'Sync Contacts',
+                icon: Icons.sync,
+                onPressed: () {},
+              ),
+            ),
+            ContactTile(),
+            ContactTile(),
+            ContactTile(),
+            ContactTile(),
+            ContactTile(),
+            ContactTile(),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class ContactTile extends StatelessWidget {
   const ContactTile({

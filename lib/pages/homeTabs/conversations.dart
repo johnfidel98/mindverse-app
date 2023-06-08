@@ -1,22 +1,120 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:mindverse/components/avatar.dart';
+import 'package:mindverse/components/button.dart';
 import 'package:mindverse/components/text.dart';
 import 'package:mindverse/constants.dart';
+import 'package:mindverse/controllers/chat.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/pages/conversation.dart';
+import 'package:mindverse/pages/roam.dart';
 import 'package:mindverse/utils.dart';
 
-class ConversationTile extends StatelessWidget {
-  const ConversationTile({
+class ConversationsTab extends StatefulWidget {
+  const ConversationsTab({
     super.key,
   });
 
   @override
+  State<ConversationsTab> createState() => _ConversationsTabState();
+}
+
+class _ConversationsTabState extends State<ConversationsTab> {
+  final SessionController sc = Get.find<SessionController>();
+  final ChatController cc = Get.find<ChatController>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // my last conversations
+    cc.getConversations(sc: sc, username: sc.username.value);
+  }
+
+  void createConversation() {
+    // prompt user to select contact
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
+      child: Obx(
+        () => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const RoamCard(),
+            cc.conversations.isNotEmpty
+                ? HomeTitle(
+                    title: 'Conversations',
+                    statsWidget: getConvAction('New'),
+                  )
+                : const SizedBox(),
+            cc.conversations.isNotEmpty
+                ? SingleChildScrollView(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      physics: const ClampingScrollPhysics(),
+                      itemCount: cc.conversations.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        Conversation c = cc.conversations[index];
+                        return ConversationTile(
+                          profile: c.profile,
+                          created: c.created,
+                          lastMessage: c.lastMessage,
+                          count: c.count,
+                        );
+                      },
+                    ),
+                  )
+                : Expanded(
+                    child: cc.loadingConversations.value &&
+                            !cc.firstLoadConversations.value
+                        ? const Padding(
+                            padding: EdgeInsets.only(top: 30),
+                            child: GeneralLoading(
+                              artifacts: 'Conversations',
+                            ))
+                        : EmptyMsg(
+                            title: 'Conversations',
+                            message:
+                                'Chat with people, connect and make friends!',
+                            child: getConvAction('New Conversation'),
+                          ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  InterfaceButton getConvAction(String actionName) => InterfaceButton(
+        label: actionName,
+        icon: Icons.group_add,
+        onPressed: createConversation,
+      );
+}
+
+class ConversationTile extends StatelessWidget {
+  const ConversationTile({
+    super.key,
+    required this.profile,
+    this.lastMessage,
+    this.created,
+    required this.count,
+  });
+
+  final UserProfile profile;
+  final String? lastMessage;
+  final DateTime? created;
+  final int count;
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.to(
-          () => ConversationPage(owner: UserProfile(username: 'maineM'))),
+      onTap: () => Get.to(() => ConversationPage(owner: profile)),
       child: Card(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
@@ -26,7 +124,7 @@ class ConversationTile extends StatelessWidget {
               Row(
                 children: [
                   AvatarSegment(
-                    userProfile: UserProfile(username: 'unknown'),
+                    userProfile: profile,
                     size: 60,
                     expanded: false,
                   ),
@@ -36,34 +134,53 @@ class ConversationTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        NamingSegment(
-                          owner: UserProfile(username: 'unknown'),
-                          size: 15,
-                          height: 1.3,
-                          fontDiff: 4,
-                        ),
-                        const Text(
-                          'Last Message',
-                          style: TextStyle(
-                            fontSize: 18,
-                            height: 1.2,
-                            color: htSolid5,
+                        if (lastMessage != null)
+                          NamingSegment(
+                            owner: profile,
+                            size: 15,
+                            height: 1.3,
+                            fontDiff: 4,
                           ),
-                        ),
-                        const Text(
-                          '2m ago',
-                          style: TextStyle(
-                            fontSize: 10,
-                            height: 1.4,
-                            color: htSolid2,
-                          ),
-                        )
+                        lastMessage != null
+                            ? Text(
+                                lastMessage!,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  height: 1.2,
+                                  color: htSolid5,
+                                ),
+                              )
+                            : NamingSegment(
+                                owner: profile,
+                                size: 18,
+                                height: 1.3,
+                                fontDiff: 4,
+                                vertical: true,
+                              ),
+                        lastMessage != null
+                            ? Text(
+                                timeago.format(created!),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  height: 1.4,
+                                  color: htSolid2,
+                                ),
+                              )
+                            : const Text(
+                                'Say hello 👋 ...',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 1.4,
+                                  fontStyle: FontStyle.italic,
+                                  color: htSolid2,
+                                ),
+                              )
                       ],
                     ),
                   )
                 ],
               ),
-              NumberCircleCount(value: 30),
+              NumberCircleCount(value: count),
             ],
           ),
         ),

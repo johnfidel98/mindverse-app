@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:chewie/chewie.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mindverse/constants.dart';
-import 'package:mindverse/controllers.dart';
+import 'package:mindverse/controllers/chat.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/utils.dart';
 import 'package:video_player/video_player.dart';

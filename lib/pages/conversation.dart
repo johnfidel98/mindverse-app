@@ -9,7 +9,8 @@ import 'package:mindverse/components/text.dart';
 import 'package:mindverse/components/text_input.dart';
 import 'package:mindverse/components/video.dart';
 import 'package:mindverse/constants.dart';
-import 'package:mindverse/controllers.dart';
+import 'package:mindverse/controllers/chat.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -73,25 +74,24 @@ class _ConversationPageState extends State<ConversationPage> {
         // check feed
         Map feed = response.payload;
 
-          // check message destined to me
-          if (feed['dstProfile']['\$id'] == sc.username.value) {
-            // get owner profle
-            UserProfile owner =
-                await sc.getProfile(uname: feed['profile']['\$id']);
+        // check message destined to me
+        if (feed['dstProfile']['\$id'] == sc.username.value) {
+          // get owner profle
+          UserProfile owner =
+              await sc.getProfile(uname: feed['profile']['\$id']);
 
-            // load message
-            Message msg = Message(
-              id: feed['\$id'],
-              profile: owner,
-              text: feed['text'],
-              created: DateTime.parse(feed['\$createdAt']),
-              seen: feed['isRead'],
-              video: feed['video'],
-              link: feed['link'],
-            );
-            cc.addMessage(msg);
-          }
-        
+          // load message
+          Message msg = Message(
+            id: feed['\$id'],
+            profile: owner,
+            text: feed['text'],
+            created: DateTime.parse(feed['\$createdAt']),
+            seen: feed['isRead'],
+            video: feed['video'],
+            link: feed['link'],
+          );
+          cc.addMessage(msg);
+        }
       }
     });
   }

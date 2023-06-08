@@ -6,7 +6,7 @@ import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/models.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:mindverse/constants.dart';
-import 'package:mindverse/controllers.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/utils.dart';
 
 class NotificationsPage extends StatefulWidget {
