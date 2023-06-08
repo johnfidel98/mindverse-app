@@ -271,12 +271,12 @@ class NamingSegment extends StatelessWidget {
   List<Widget> get namingWidgets {
     return [
       Text(
-        owner.name, //'owner.name h rt r h tbhebrb erbbw',
+        owner.name, // todo: text width h rt r h tbhebrb erbbw',
         style: defaultTextStyle.copyWith(
           fontSize: size,
           color: htSolid4,
           height: height,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.bold,
         ),
         overflow: TextOverflow.ellipsis,
       ),

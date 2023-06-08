@@ -132,7 +132,7 @@ class _HomePageState extends State<HomePage> {
             labelColor: htSolid5,
             indicator: const BoxDecoration(
               border: Border(
-                top: BorderSide(color: htSolid4, width: 1),
+                top: BorderSide(color: htSolid4, width: 2),
               ),
             ),
             tabs: const [

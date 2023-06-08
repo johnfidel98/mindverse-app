@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/get.dart' as get_x;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:mindverse/controllers/chat.dart';
 import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -83,7 +82,10 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/home', page: () => const HomePage()),
         GetPage(
           name: '/conversation',
-          page: () => ConversationPage(owner: profile),
+          page: () => ConversationPage(
+            entityId: profile.username,
+            isGrp: false,
+          ),
         ),
         GetPage(name: '/profile', page: () => ProfilePage(profile: profile)),
         GetPage(name: '/notifications', page: () => const NotificationsPage()),

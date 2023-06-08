@@ -85,7 +85,7 @@ class ChatController extends GetxController {
           }
           grp.count = cnt;
           grp.lastProfile = msgProfile;
-          grp.created = DateTime.parse(msgDocs[0].$createdAt);
+          grp.lastPosted = DateTime.parse(msgDocs[0].$createdAt);
         } else {
           grp.lastMessage = 'Say hello 👋 ...';
         }
@@ -238,9 +238,9 @@ class ChatController extends GetxController {
           profile: owner,
           text: doc.data['text'],
           created: DateTime.parse(doc.$createdAt),
-          seen: doc.data['isRead'],
-          video: doc.data['video'],
-          link: doc.data['link'],
+          seen: doc.data['isRead'].contains(ses.username.value),
+          video: doc.data['video'] ?? '',
+          link: doc.data['link'] ?? '',
         );
 
         // add images if exists
@@ -260,10 +260,10 @@ class ChatController extends GetxController {
               profile: rOwner,
               text: rDoc.data['text'],
               created: DateTime.parse(rDoc.$createdAt),
-              seen: rDoc.data['isRead'],
-              video: rDoc.data['video'],
+              seen: rDoc.data['isRead'].contains(ses.username.value),
+              video: rDoc.data['video'] ?? '',
               images: rDoc.data['images'] as List<String>,
-              link: rDoc.data['link'],
+              link: rDoc.data['link'] ?? '',
             );
 
             // add images if exists

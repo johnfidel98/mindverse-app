@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mindverse/components/ad.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/components/button.dart';
@@ -60,11 +61,21 @@ class _ConversationsTabState extends State<ConversationsTab> {
                       itemCount: cc.conversations.length,
                       itemBuilder: (BuildContext context, int index) {
                         Conversation c = cc.conversations[index];
-                        return ConversationTile(
-                          profile: c.profile,
-                          created: c.created,
-                          lastMessage: c.lastMessage,
-                          count: c.count,
+                        return Column(
+                          children: [
+                            ConversationTile(
+                              profile: c.profile,
+                              created: c.created,
+                              lastMessage: c.lastMessage,
+                              count: c.count,
+                            ),
+                            index % 4 == 0
+                                ? const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 6),
+                                    child: NativeAdvert(),
+                                  )
+                                : const SizedBox(),
+                          ],
                         );
                       },
                     ),
@@ -114,7 +125,10 @@ class ConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.to(() => ConversationPage(owner: profile)),
+      onTap: () => Get.to(() => ConversationPage(
+            entityId: profile.username,
+            isGrp: false,
+          )),
       child: Card(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
@@ -142,12 +156,16 @@ class ConversationTile extends StatelessWidget {
                             fontDiff: 4,
                           ),
                         lastMessage != null
-                            ? Text(
-                                lastMessage!,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  height: 1.2,
-                                  color: htSolid5,
+                            ? SizedBox(
+                                width: MediaQuery.of(context).size.width - 140,
+                                child: Text(
+                                  lastMessage!,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    height: 1.2,
+                                    color: htSolid5,
+                                  ),
                                 ),
                               )
                             : NamingSegment(

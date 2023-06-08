@@ -20,7 +20,7 @@ class UserProfile {
     this.id,
   });
 
-  factory UserProfile.fromDoc(doc) {
+  factory UserProfile.fromDoc(Document doc) {
     // init from doc
     return UserProfile(
       name: doc.data['name'],
@@ -113,8 +113,13 @@ class Group {
   // groups object
   List<UserProfile>? profiles;
 
-  String? id;
+  String id;
   String name;
+  String? logo;
+  String? admin;
+  List? members;
+  List? requests;
+  DateTime? lastPosted;
   DateTime? created;
   String lastMessage;
   UserProfile? lastProfile;
@@ -123,12 +128,30 @@ class Group {
   Group({
     this.profiles,
     this.lastProfile,
+    this.logo,
     required this.name,
+    this.lastPosted,
+    this.admin,
     this.created,
-    this.id = '',
+    this.requests,
+    this.members,
+    required this.id,
     this.lastMessage = '',
     this.count = 0,
   });
+
+  factory Group.fromDoc(Document doc) {
+    // init from doc
+    return Group(
+      name: doc.data['name'],
+      logo: doc.data['logo'],
+      members: doc.data['dstEntities'],
+      admin: doc.data['sourceId'],
+      requests: doc.data['requestIds'],
+      created: DateTime.parse(doc.$createdAt),
+      id: doc.$id,
+    );
+  }
 }
 
 class SearchData {
@@ -142,7 +165,7 @@ class SearchData {
   factory SearchData.fromDoc(Document doc) {
     if (doc.data.containsKey('logo')) {
       return SearchData(
-        group: Group(name: doc.data['name'], profiles: []),
+        group: Group(name: doc.data['name'], profiles: [], id: doc.$id),
         created: DateTime.parse(doc.$createdAt),
       );
     }

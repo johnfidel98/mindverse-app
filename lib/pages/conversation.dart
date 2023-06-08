@@ -23,24 +23,33 @@ const uuid = Uuid();
 class ConversationPage extends StatefulWidget {
   const ConversationPage({
     super.key,
-    this.owner,
+    this.entityId,
+    required this.isGrp,
   });
 
-  final UserProfile? owner;
+  // use entityId to monitor for both groups and 1-1 conversations.
+  final String? entityId;
+  final bool isGrp;
 
   @override
   State<ConversationPage> createState() => _ConversationPageState();
 }
 
-class _ConversationPageState extends State<ConversationPage> {
+class _ConversationPageState extends State<ConversationPage>
+    with WidgetsBindingObserver {
   final ChatController cc = Get.find<ChatController>();
   final SessionController sc = Get.find<SessionController>();
 
   final ScrollController _scrollController = ScrollController();
-  bool _reachedEnd = false;
+
   late Realtime _realtime;
   late StreamSubscription _listenerUpdatedMessages;
   late final RealtimeSubscription _newMessagesListener;
+
+  Group groupData = Group(name: 'unknown', id: '#');
+  UserProfile profileData = UserProfile(username: 'unknown');
+  bool _reachedEnd = false;
+  bool _loadedEntity = false;
 
   @override
   void initState() {
@@ -63,7 +72,7 @@ class _ConversationPageState extends State<ConversationPage> {
       cc.markAllRead(ses: sc);
     });
 
-    // listen for realtime feed events
+    // listen for realtime message events
     _newMessagesListener = _realtime.subscribe([
       'databases.${appDetails.databaseId}.collections.${sc.collections['messages']}.documents',
     ]);
@@ -71,29 +80,48 @@ class _ConversationPageState extends State<ConversationPage> {
     _newMessagesListener.stream.listen((response) async {
       if (response.events.contains(
           'databases.*.collections.${sc.collections['messages']}.documents.*.create')) {
-        // check feed
-        Map feed = response.payload;
+        // check message
+        Map msg = response.payload;
 
         // check message destined to me
-        if (feed['dstProfile']['\$id'] == sc.username.value) {
+        if (msg['entitiesId'] == sc.username.value) {
           // get owner profle
-          UserProfile owner =
-              await sc.getProfile(uname: feed['profile']['\$id']);
+          UserProfile owner = await sc.getProfile(uname: msg['sourceId']);
 
           // load message
-          Message msg = Message(
-            id: feed['\$id'],
+          cc.addMessage(Message(
+            id: msg['\$id'],
             profile: owner,
-            text: feed['text'],
-            created: DateTime.parse(feed['\$createdAt']),
-            seen: feed['isRead'],
-            video: feed['video'],
-            link: feed['link'],
-          );
-          cc.addMessage(msg);
+            text: msg['text'],
+            created: DateTime.parse(msg['\$createdAt']),
+            seen: msg['isRead'].contains(sc.username.value),
+            video: msg['video'] ?? '',
+            link: msg['link'] ?? '',
+          ));
         }
       }
     });
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => postInit());
+  }
+
+  void postInit() {
+    // load entity details
+    if (widget.isGrp) {
+      // load group details
+      sc.getGroup(groupId: widget.entityId!).then((Group g) => setState(() {
+            groupData = g;
+            _loadedEntity = true;
+          }));
+    } else {
+      // load profile details
+      sc
+          .getProfile(uname: widget.entityId!)
+          .then((UserProfile p) => setState(() {
+                profileData = p;
+                _loadedEntity = true;
+              }));
+    }
   }
 
   void _scrollListener() {
@@ -116,8 +144,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
   void getConversation({bool bottom = false}) async =>
       // get conversations from secrets
-      await cc.getMessages(
-          ses: sc, username: widget.owner!.username, bottom: bottom);
+      await cc.getMessages(ses: sc, username: widget.entityId!, bottom: bottom);
 
   @override
   void dispose() {
@@ -137,12 +164,28 @@ class _ConversationPageState extends State<ConversationPage> {
       appBar: AppBar(
         leading: const LeadingBack(),
         titleSpacing: 0,
-        title: NamingSegment(
-          owner: widget.owner!,
-          size: 20,
-          rowAlignment: MainAxisAlignment.start,
-          height: 1.8,
-        ),
+        title: _loadedEntity
+            ? widget.isGrp
+                ? Text(
+                    groupData.name,
+                    style: defaultTextStyle.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : NamingSegment(
+                    owner: profileData,
+                    size: 20,
+                    rowAlignment: MainAxisAlignment.start,
+                    height: 1.8,
+                  )
+            : Text(
+                'Loading ...',
+                style: defaultTextStyle.copyWith(
+                  fontSize: 20,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
         backgroundColor: Colors.white,
       ),
       body: Column(
@@ -179,7 +222,10 @@ class _ConversationPageState extends State<ConversationPage> {
                           ),
                         ),
                         index % 4 == 0
-                            ? const NativeAdvert()
+                            ? const Padding(
+                                padding: EdgeInsets.only(top: 15.0),
+                                child: AdaptiveAdvert(),
+                              )
                             : const SizedBox(),
                       ],
                     );

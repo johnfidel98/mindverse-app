@@ -12,6 +12,7 @@ class SessionController extends GetxController {
   var notifications = RxList([]);
 
   var profiles = RxMap();
+  var groups = RxMap();
   var prefs = RxMap();
   var userId = ''.obs;
   var username = 'unknown'.obs;
@@ -187,6 +188,26 @@ class SessionController extends GetxController {
       // store profile for future ref
       profiles[uname] = {'checked': DateTime.now().toUtc(), 'doc': doc};
       return UserProfile.fromDoc(doc);
+    });
+  }
+
+  Future<Group> getGroup(
+      {required String groupId, bool newDetails = false}) async {
+    // check if group already processed
+    if (groups.containsKey(groupId) && !newDetails) {
+      // check if stored group is valid by 1 hrs
+      if (groups[groupId]['checked'].millisecondsSinceEpoch >
+          DateTime.now().toUtc().millisecondsSinceEpoch - 60000 * 60) {
+        return Group.fromDoc(groups[groupId]['doc']);
+      }
+    }
+
+    return getDoc(collectionName: "groups", docId: groupId).then((doc) {
+      // store group for future ref
+      groups[groupId] = {'checked': DateTime.now().toUtc(), 'doc': doc};
+
+      // return group
+      return Group.fromDoc(doc);
     });
   }
 
