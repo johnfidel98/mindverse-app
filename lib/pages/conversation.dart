@@ -187,13 +187,27 @@ class _ConversationPageState extends State<ConversationPage>
         titleSpacing: 0,
         title: _loadedEntity
             ? widget.isGrp
-                ? Text(
-                    groupData.name,
-                    style: defaultTextStyle.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: htSolid4,
-                    ),
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        groupData.name,
+                        style: defaultTextStyle.copyWith(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: htSolid4,
+                        ),
+                      ),
+                      if (groupData.isPrivate)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 4.0),
+                          child: Icon(
+                            Icons.lock,
+                            color: htSolid4,
+                            size: 16,
+                          ),
+                        ),
+                    ],
                   )
                 : NamingSegment(
                     owner: profileData,

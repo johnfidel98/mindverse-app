@@ -63,12 +63,7 @@ class _ConversationsTabState extends State<ConversationsTab> {
                         Conversation c = cc.conversations[index];
                         return Column(
                           children: [
-                            ConversationTile(
-                              profile: c.profile,
-                              created: c.created,
-                              lastMessage: c.lastMessage,
-                              count: c.count,
-                            ),
+                            ConversationTile(cnv: c),
                             index % 4 == 0
                                 ? const Padding(
                                     padding: EdgeInsets.symmetric(vertical: 6),
@@ -109,22 +104,16 @@ class _ConversationsTabState extends State<ConversationsTab> {
 class ConversationTile extends StatelessWidget {
   const ConversationTile({
     super.key,
-    required this.profile,
-    this.lastMessage,
-    this.created,
-    required this.count,
+    required this.cnv,
   });
 
-  final UserProfile profile;
-  final String? lastMessage;
-  final DateTime? created;
-  final int count;
+  final Conversation cnv;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => Get.to(() => ConversationPage(
-            entityId: profile.username,
+            entityId: cnv.profile.username,
             isGrp: false,
           )),
       child: Card(
@@ -136,7 +125,7 @@ class ConversationTile extends StatelessWidget {
               Row(
                 children: [
                   AvatarSegment(
-                    userProfile: profile,
+                    userProfile: cnv.profile,
                     size: 60,
                     expanded: false,
                   ),
@@ -146,18 +135,18 @@ class ConversationTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (lastMessage != null)
+                        if (cnv.lastMessage != null)
                           NamingSegment(
-                            owner: profile,
+                            owner: cnv.profile,
                             size: 15,
                             height: 1.3,
                             fontDiff: 4,
                           ),
-                        lastMessage != null
+                        cnv.lastMessage != null
                             ? SizedBox(
                                 width: MediaQuery.of(context).size.width - 140,
                                 child: Text(
-                                  lastMessage!,
+                                  cnv.lastMessage!,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontSize: 18,
@@ -167,15 +156,15 @@ class ConversationTile extends StatelessWidget {
                                 ),
                               )
                             : NamingSegment(
-                                owner: profile,
+                                owner: cnv.profile,
                                 size: 18,
                                 height: 1.3,
                                 fontDiff: 4,
                                 vertical: true,
                               ),
-                        lastMessage != null
+                        cnv.lastMessage != null
                             ? Text(
-                                timeago.format(created!),
+                                timeago.format(cnv.created),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   height: 1.4,
@@ -196,7 +185,7 @@ class ConversationTile extends StatelessWidget {
                   )
                 ],
               ),
-              NumberCircleCount(value: count),
+              NumberCircleCount(value: cnv.count),
             ],
           ),
         ),

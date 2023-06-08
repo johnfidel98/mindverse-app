@@ -137,6 +137,7 @@ class Group {
   DateTime? created;
   String lastMessage;
   UserProfile? lastProfile;
+  bool isPrivate;
   int count;
 
   Group({
@@ -149,6 +150,7 @@ class Group {
     this.created,
     this.requests,
     this.members,
+    this.isPrivate = false,
     required this.id,
     this.lastMessage = '',
     this.count = 0,
@@ -162,6 +164,7 @@ class Group {
       members: doc.data['dstEntities'],
       admin: doc.data['sourceId'],
       requests: doc.data['requestIds'],
+      isPrivate: doc.data['isPrivate'] ?? false,
       created: DateTime.parse(doc.$createdAt),
       id: doc.$id,
     );

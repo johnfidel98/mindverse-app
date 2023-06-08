@@ -90,10 +90,7 @@ class ChatController extends GetxController {
     ]).then((res) async {
       for (aw.Document doc in res.documents) {
         // sync group basic details
-        Group grp = Group(
-          id: doc.$id,
-          name: doc.data['name'],
-        );
+        Group grp = Group.fromDoc(doc);
 
         // get groups' last message
         List<aw.Document> msgDocs = await getGroupConversation(

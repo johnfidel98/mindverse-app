@@ -104,14 +104,7 @@ class _GroupsTabState extends State<GroupsTab> {
                       Group g = cc.groups[index];
                       return Column(
                         children: [
-                          GroupTile(
-                            id: g.id,
-                            lastProfile: g.lastProfile,
-                            posted: g.lastPosted,
-                            grpName: g.name,
-                            lastMsg: g.lastMessage,
-                            msgsCount: g.count,
-                          ),
+                          GroupTile(grp: g),
                           index % 4 == 0
                               ? const Padding(
                                   padding: EdgeInsets.symmetric(vertical: 2),
@@ -159,26 +152,16 @@ class _GroupsTabState extends State<GroupsTab> {
 class GroupTile extends StatelessWidget {
   const GroupTile({
     super.key,
-    this.lastProfile,
-    required this.grpName,
-    required this.lastMsg,
-    required this.posted,
-    required this.msgsCount,
-    required this.id,
+    required this.grp,
   });
 
-  final UserProfile? lastProfile;
-  final String grpName;
-  final String lastMsg;
-  final DateTime? posted;
-  final String id;
-  final int msgsCount;
+  final Group grp;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => Get.to(() => ConversationPage(
-            entityId: id,
+            entityId: grp.id,
             isGrp: true,
           )),
       child: Card(
@@ -196,36 +179,52 @@ class GroupTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          lastProfile != null ? grpName : 'New Group',
-                          style: const TextStyle(fontSize: 12, color: htSolid4),
+                        Row(
+                          children: [
+                            if (grp.isPrivate)
+                              const Padding(
+                                padding: EdgeInsets.only(right: 2.0),
+                                child: Icon(
+                                  Icons.lock,
+                                  color: htSolid4,
+                                  size: 13,
+                                ),
+                              ),
+                            Text(
+                              grp.lastProfile != null ? grp.name : 'New Group',
+                              style: const TextStyle(
+                                  fontSize: 12, color: htSolid4),
+                            ),
+                          ],
                         ),
                         Row(
                           children: [
-                            if (lastProfile != null)
+                            if (grp.lastProfile != null)
                               StaticAvatarSegment(
                                   isCircular: true,
                                   size: 18,
-                                  path: lastProfile!.avatar.isNotEmpty
-                                      ? lastProfile!.avatar
+                                  path: grp.lastProfile!.avatar.isNotEmpty
+                                      ? grp.lastProfile!.avatar
                                       : 'assets/images/user.png'),
-                            if (lastProfile != null) const SizedBox(width: 5),
-                            lastProfile != null
+                            if (grp.lastProfile != null)
+                              const SizedBox(width: 5),
+                            grp.lastProfile != null
                                 ? Text(
-                                    lastMsg,
+                                    grp.lastMessage,
                                     style: TextStyle(
-                                        fontStyle: lastProfile != null
+                                        fontStyle: grp.lastProfile != null
                                             ? null
                                             : FontStyle.italic,
                                         fontSize: 18,
-                                        color: lastProfile != null
+                                        color: grp.lastProfile != null
                                             ? htSolid5
                                             : htSolid2,
-                                        height:
-                                            lastProfile != null ? null : 1.5),
+                                        height: grp.lastProfile != null
+                                            ? null
+                                            : 1.5),
                                   )
                                 : Text(
-                                    grpName,
+                                    grp.name,
                                     style: const TextStyle(
                                       fontSize: 18,
                                       color: htSolid4,
@@ -234,9 +233,9 @@ class GroupTile extends StatelessWidget {
                                   ),
                           ],
                         ),
-                        posted != null
+                        grp.lastPosted != null
                             ? Text(
-                                timeago.format(posted!),
+                                timeago.format(grp.lastPosted!),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   height: 1.4,
@@ -244,7 +243,7 @@ class GroupTile extends StatelessWidget {
                                 ),
                               )
                             : Text(
-                                lastMsg,
+                                grp.lastMessage,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   height: 1.4,
@@ -257,7 +256,7 @@ class GroupTile extends StatelessWidget {
                   )
                 ],
               ),
-              NumberCircleCount(value: msgsCount, fontSize: 15),
+              NumberCircleCount(value: grp.count, fontSize: 15),
             ],
           ),
         ),
