@@ -109,10 +109,14 @@ class NumberCircleCount extends StatelessWidget {
     return value == 0
         ? const SizedBox()
         : Container(
-            decoration:
-                const BoxDecoration(shape: BoxShape.circle, color: htSolid4),
+            decoration: const BoxDecoration(
+              color: htSolid4,
+              borderRadius: BorderRadius.all(
+                Radius.circular(10),
+              ),
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(5.0),
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Text(
                 numberFormat.format(value),
                 style: TextStyle(fontSize: fontSize, color: Colors.white),
@@ -142,6 +146,61 @@ class EmptyDone extends StatelessWidget {
           Text(
             'All Caught Up',
             style: defaultTextStyle.copyWith(fontSize: 30),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class EmptyMsg extends StatelessWidget {
+  const EmptyMsg({
+    super.key,
+    this.lottiePath,
+    required this.title,
+    this.message,
+    this.child,
+  });
+
+  final String? lottiePath;
+  final String title;
+  final String? message;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: htSolid1,
+      padding: const EdgeInsets.all(20),
+      height: MediaQuery.of(context).size.height - 50,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (lottiePath != null)
+            Lottie.asset(
+              lottiePath!,
+              repeat: true,
+              width: MediaQuery.of(context).size.width - 80,
+            ),
+          const SizedBox(height: 40),
+          Text(
+            title,
+            style: defaultTextStyle.copyWith(fontSize: 26),
+          ),
+          if (message != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Text(
+                message!,
+                style: defaultTextStyle.copyWith(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(padding: const EdgeInsets.all(5), child: child),
+            ],
           ),
         ],
       ),
@@ -343,25 +402,31 @@ void releaseFocus({required BuildContext context, Function? onTappedOutside}) {
 
 void showAlertDialog(
     {required BuildContext context,
-    String title = 'Important',
-    required String msg,
+    String? title = 'Important',
+    String? msg,
+    Widget? msgWidget,
     String? footer,
     Function()? onOk}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text(
-          title,
-          style: defaultTextStyle.copyWith(fontSize: 24),
-        ),
+        title: title == null
+            ? const SizedBox()
+            : Text(
+                title,
+                style: defaultTextStyle.copyWith(fontSize: 24),
+              ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              msg,
-              style: defaultTextStyle.copyWith(fontSize: 16),
-            ),
+            if (msgWidget != null) msgWidget,
+            if (msg != null)
+              Text(
+                msg,
+                style: defaultTextStyle.copyWith(fontSize: 16),
+              ),
             if (footer != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),

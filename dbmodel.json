@@ -7,10 +7,11 @@
         "*userId[36]": "str",
         "lastOnline": "datetime"
     },
-    "groups(permissions=****)": {
-        "name[30]": "str",
+    "groups(permissions=**-*)": {
+        "*sourceId[36]": "str",
+        "*name[30]": "str",
         "logo[50]": "str",
-        "isPrivate(default=false)": "bool",
+        "requestIds[36]": "array",
         "dstEntities[50]": "array"
     },
     "messages(permissions=**--)": {
@@ -24,7 +25,7 @@
         "lat": "double",
         "lng": "double",
         "isPrivate(default=false)": "bool",
-        "isRead(default=false)": "bool",
+        "isRead[36]": "array",
         "entitiesId[36]": "str"
     },
     "atlas(permissions=***-)": {

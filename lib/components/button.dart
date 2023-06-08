@@ -124,7 +124,7 @@ class InterfaceButton extends StatelessWidget {
     required this.label,
     this.onPressed,
     this.alt = false,
-    this.bgColor = htSolid5,
+    this.bgColor,
     required this.icon,
   });
 
@@ -136,7 +136,7 @@ class InterfaceButton extends StatelessWidget {
             elevation: const MaterialStatePropertyAll(2),
             overlayColor: const MaterialStatePropertyAll(htTrans1),
             backgroundColor:
-                MaterialStatePropertyAll(alt! ? htSolid2 : htSolid3),
+                MaterialStatePropertyAll(alt! ? htSolid2 : bgColor ?? htSolid3),
             padding: const MaterialStatePropertyAll(
               EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
             ),

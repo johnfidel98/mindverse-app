@@ -21,6 +21,9 @@ class SessionController extends GetxController {
   var onlineStatus = RxMap({});
 
   var notifications = RxList([]);
+  var groups = RxList([]);
+  var processedGroupIds = RxList([]);
+
   var profiles = RxMap();
   var prefs = RxMap();
   var userId = ''.obs;
@@ -83,6 +86,63 @@ class SessionController extends GetxController {
           created: DateTime.parse(doc.$createdAt),
           body: jsonDecode(doc.data['body']),
         ));
+      }
+    });
+  }
+
+  Future getGroups({required ChatController chatController}) async {
+    await getDocs(collectionName: 'groups', queries: [
+      Query.search('dstEntities', '"${username.value}"'),
+      Query.orderDesc('\$createdAt'),
+      Query.limit(100),
+    ]).then((res) async {
+      for (AppwriteModels.Document doc in res.documents) {
+        // sync group basic details
+        Group grp = Group(
+          id: doc.$id,
+          name: doc.data['name'],
+        );
+
+        // get groups' last message
+        List msgDocs = await chatController.getGroupConversation(
+          ses: this,
+          groupId: doc.$id,
+        );
+        if (msgDocs.isNotEmpty) {
+          // get last message user details
+          UserProfile msgProfile =
+              await getProfile(uname: msgDocs[0].data['sourceId']);
+          grp.lastMessage = '${msgDocs[0].data["text"]}';
+
+          int cnt = 0;
+          for (AppwriteModels.Document mDoc in msgDocs) {
+            // only count ones not read by me
+            if (!mDoc.data['isRead'].contains(username.value)) {
+              cnt += 1;
+            }
+          }
+          grp.count = cnt;
+          grp.lastProfile = msgProfile;
+          grp.created = DateTime.parse(msgDocs[0].$createdAt);
+        } else {
+          grp.lastMessage = 'Say hello 👋 ...';
+        }
+
+        // ensure duplicate groups are not processed
+        if (!processedGroupIds.contains(doc.$id)) {
+          // add new to groups
+          groups.add(grp);
+
+          // add group to processed list
+          processedGroupIds.add(grp.id);
+        } else {
+          // get group index
+          int ix = processedGroupIds.indexOf(grp.id);
+
+          // update group details
+          groups.removeAt(ix);
+          groups.insert(ix, grp);
+        }
       }
     });
   }
@@ -242,6 +302,13 @@ class SessionController extends GetxController {
           collectionId: collections[collectionName],
           documentId: docId);
 
+  Future createDoc({required String collectionName, required Map data}) =>
+      _database.createDocument(
+          databaseId: _appDetails.databaseId,
+          collectionId: collections[collectionName],
+          documentId: ID.unique(),
+          data: data);
+
   Future deleteDoc({required String collectionName, required String docId}) =>
       _database.deleteDocument(
           databaseId: _appDetails.databaseId,
@@ -389,6 +456,14 @@ class ChatController extends GetxController {
         Query.orderDesc('\$createdAt'),
         Query.limit(1),
       ]).then((docs) => docs.documents.length > 0 ? docs.documents[0] : null);
+
+  Future<List> getGroupConversation(
+          {required SessionController ses, required String groupId}) async =>
+      await ses.getDocs(collectionName: 'messages', queries: [
+        Query.search('entitiesId', '"$groupId"'),
+        Query.orderDesc('\$createdAt'),
+        Query.limit(100),
+      ]).then((docs) => docs.documents.length > 0 ? docs.documents : []);
 
   Future getMessages(
       {required SessionController ses,

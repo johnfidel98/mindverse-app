@@ -49,16 +49,26 @@ class PopSetupEntry extends StatelessWidget {
 class StaticAvatarSegment extends StatelessWidget {
   final double size;
   final String path;
-  const StaticAvatarSegment({Key? key, required this.size, required this.path})
-      : super(key: key);
+  final bool isCircular;
+  const StaticAvatarSegment({
+    Key? key,
+    required this.size,
+    required this.path,
+    this.isCircular = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      path,
-      height: size,
-      width: size,
-      fit: BoxFit.cover,
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+          color: htTrans2,
+          shape: isCircular ? BoxShape.circle : BoxShape.rectangle),
+      child: Image.asset(
+        path,
+        height: size,
+        width: size,
+      ),
     );
   }
 }

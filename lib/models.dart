@@ -113,16 +113,18 @@ class Conversation {
 
 class Group {
   // groups object
-  List<UserProfile> profiles;
+  List<UserProfile>? profiles;
 
   String? id;
   String name;
   DateTime? created;
   String lastMessage;
+  UserProfile? lastProfile;
   int count;
 
   Group({
-    required this.profiles,
+    this.profiles,
+    this.lastProfile,
     required this.name,
     this.created,
     this.id = '',
