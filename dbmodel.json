@@ -11,6 +11,7 @@
         "*sourceId[36]": "str",
         "*name[30]": "str",
         "logo[50]": "str",
+        "isPrivate(default=false)": "bool",
         "requestIds[36]": "array",
         "dstEntities[50]": "array"
     },

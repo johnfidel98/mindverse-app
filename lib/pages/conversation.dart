@@ -192,6 +192,7 @@ class _ConversationPageState extends State<ConversationPage>
                     style: defaultTextStyle.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      color: htSolid4,
                     ),
                   )
                 : NamingSegment(
@@ -208,6 +209,28 @@ class _ConversationPageState extends State<ConversationPage>
                 ),
               ),
         backgroundColor: Colors.white,
+        actions: _isGroup
+            ? [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.view_list,
+                    color: htSolid5,
+                  ),
+                ),
+                if (groupData.admin == sc.username.value)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.person_add,
+                        color: htSolid5,
+                      ),
+                    ),
+                  )
+              ]
+            : null,
       ),
       body: Column(
         children: [

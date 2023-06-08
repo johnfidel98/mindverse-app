@@ -13,7 +13,6 @@ import 'package:mindverse/pages/home.dart';
 import 'package:mindverse/pages/notifications.dart';
 import 'package:mindverse/pages/profile.dart';
 import 'package:mindverse/pages/roam.dart';
-import 'package:mindverse/pages/search.dart';
 import 'package:mindverse/pages/welcome.dart';
 import 'package:mindverse/theme.dart';
 
@@ -89,7 +88,6 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(name: '/profile', page: () => ProfilePage(profile: profile)),
         GetPage(name: '/notifications', page: () => const NotificationsPage()),
-        GetPage(name: '/search', page: () => const SearchPage()),
         GetPage(name: '/roam', page: () => const RoamPage()),
       ],
     );

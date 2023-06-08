@@ -10,7 +10,6 @@ import 'package:mindverse/pages/homeTabs/contacts.dart';
 import 'package:mindverse/pages/homeTabs/conversations.dart';
 import 'package:mindverse/pages/homeTabs/groups.dart';
 import 'package:mindverse/pages/notifications.dart';
-import 'package:mindverse/pages/search.dart';
 import 'package:mindverse/utils.dart';
 
 class HomePage extends StatefulWidget {
@@ -78,12 +77,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           actions: [
-            IconButton(
-                onPressed: () => Get.to(() => const SearchPage()),
-                icon: const Icon(
-                  Icons.search,
-                  color: htSolid5,
-                )),
             IconButton(
                 onPressed: () => Get.to(() => const NotificationsPage()),
                 icon: Stack(
