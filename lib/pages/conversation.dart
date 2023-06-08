@@ -50,6 +50,8 @@ class _ConversationPageState extends State<ConversationPage>
   UserProfile profileData = UserProfile(username: 'unknown');
   bool _reachedEnd = false;
   bool _loadedEntity = false;
+  bool _isGroup = false;
+  Completer<void> completerEntityLoaded = Completer<void>();
 
   @override
   void initState() {
@@ -58,6 +60,10 @@ class _ConversationPageState extends State<ConversationPage>
     // monitor scrolling
     _scrollController.addListener(_scrollListener);
 
+    // update loading
+    cc.setMessagesLoading(true);
+
+    // load current conversation
     getConversation();
 
     // setup realtime listening of messages for fast response
@@ -109,18 +115,28 @@ class _ConversationPageState extends State<ConversationPage>
     // load entity details
     if (widget.isGrp) {
       // load group details
-      sc.getGroup(groupId: widget.entityId!).then((Group g) => setState(() {
-            groupData = g;
-            _loadedEntity = true;
-          }));
+      sc.getGroup(groupId: widget.entityId!).then((Group g) {
+        // update states
+        setState(() {
+          groupData = g;
+          _loadedEntity = true;
+          _isGroup = true;
+        });
+
+        // complete loaded entity
+        completerEntityLoaded.complete();
+      });
     } else {
       // load profile details
-      sc
-          .getProfile(uname: widget.entityId!)
-          .then((UserProfile p) => setState(() {
-                profileData = p;
-                _loadedEntity = true;
-              }));
+      sc.getProfile(uname: widget.entityId!).then((UserProfile p) {
+        setState(() {
+          profileData = p;
+          _loadedEntity = true;
+        });
+
+        // complete loaded entity
+        completerEntityLoaded.complete();
+      });
     }
   }
 
@@ -142,9 +158,14 @@ class _ConversationPageState extends State<ConversationPage>
     }
   }
 
-  void getConversation({bool bottom = false}) async =>
-      // get conversations from secrets
-      await cc.getMessages(ses: sc, username: widget.entityId!, bottom: bottom);
+  void getConversation({bool bottom = false}) async {
+    // wait for entity to load
+    await completerEntityLoaded.future;
+
+    // get conversations from secrets
+    await cc.getMessages(
+        ses: sc, entityId: widget.entityId!, bottom: bottom, isGroup: _isGroup);
+  }
 
   @override
   void dispose() {
@@ -194,43 +215,48 @@ class _ConversationPageState extends State<ConversationPage>
             child: Padding(
               padding: const EdgeInsets.only(bottom: 10.0),
               child: Obx(
-                () => ListView.builder(
-                  controller: _scrollController,
-                  reverse: true,
-                  itemCount: cc.messages.length,
-                  itemBuilder: (context, index) {
-                    Message messageData = cc.messages[index];
-                    var msgUser = messageData.profile.username;
-                    var currentUser = sc.username.value;
-                    return Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: msgUser == currentUser ? 20.0 : 5.0,
-                            right: msgUser == currentUser ? 5.0 : 20.0,
-                          ),
-                          child: Card(
-                            margin: const EdgeInsets.only(top: 15.0, bottom: 2),
-                            color: msgUser == currentUser
-                                ? htSolid1
-                                : Colors.grey[100],
-                            elevation: 2,
-                            child: ConversationComponent(
-                              messageData: messageData,
-                              session: sc,
-                            ),
-                          ),
-                        ),
-                        index % 4 == 0
-                            ? const Padding(
-                                padding: EdgeInsets.only(top: 15.0),
-                                child: AdaptiveAdvert(),
-                              )
-                            : const SizedBox(),
-                      ],
-                    );
-                  },
-                ),
+                () => cc.loadingMessages.value
+                    ? const GeneralLoading(
+                        artifacts: 'Messages',
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        reverse: true,
+                        itemCount: cc.messages.length,
+                        itemBuilder: (context, index) {
+                          Message messageData = cc.messages[index];
+                          var msgUser = messageData.profile.username;
+                          var currentUser = sc.username.value;
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  left: msgUser == currentUser ? 20.0 : 5.0,
+                                  right: msgUser == currentUser ? 5.0 : 20.0,
+                                ),
+                                child: Card(
+                                  margin: const EdgeInsets.only(
+                                      top: 15.0, bottom: 2),
+                                  color: msgUser == currentUser
+                                      ? htSolid1
+                                      : Colors.grey[100],
+                                  elevation: 2,
+                                  child: ConversationComponent(
+                                    messageData: messageData,
+                                    session: sc,
+                                  ),
+                                ),
+                              ),
+                              index % 8 == 0
+                                  ? const Padding(
+                                      padding: EdgeInsets.only(top: 15.0),
+                                      child: AdaptiveAdvert(),
+                                    )
+                                  : const SizedBox(),
+                            ],
+                          );
+                        },
+                      ),
               ),
             ),
           ),

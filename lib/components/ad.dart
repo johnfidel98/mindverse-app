@@ -30,7 +30,7 @@ class _NativeAdvertState extends State<NativeAdvert> {
   @override
   Widget build(BuildContext context) => _nativeAdIsLoaded
       ? Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 2),
           child: Align(
               alignment: Alignment.center,
               child: ConstrainedBox(

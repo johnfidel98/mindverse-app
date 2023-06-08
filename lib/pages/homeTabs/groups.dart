@@ -114,7 +114,7 @@ class _GroupsTabState extends State<GroupsTab> {
                           ),
                           index % 4 == 0
                               ? const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 6),
+                                  padding: EdgeInsets.symmetric(vertical: 2),
                                   child: NativeAdvert(),
                                 )
                               : const SizedBox(),
@@ -183,7 +183,7 @@ class GroupTile extends StatelessWidget {
           )),
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0),
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

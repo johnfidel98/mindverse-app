@@ -18,17 +18,29 @@ class ChatController extends GetxController {
   var firstLoadConversations = false.obs;
   var processedConversationsIds = RxList();
 
+  var loadingMessages = true.obs;
   var messages = RxList([]);
 
-  setGlobalMute(bool muted) {
-    muteVideos.value = muted;
-  }
+  setGlobalMute(bool muted) => muteVideos.value = muted;
 
-  setCurrentVideoPosition(String vid, int pos) {
-    videoPosition[vid] = pos;
-  }
+  setMessagesLoading(bool loading) => loadingMessages.value = loading;
+
+  setCurrentVideoPosition(String vid, int pos) => videoPosition[vid] = pos;
 
   addMessage(Message msg) => messages.insert(0, msg);
+
+  Future<Message> getMessage(
+          {required SessionController ses, required String mid}) async =>
+      await ses
+          .getDoc(collectionName: 'messages', docId: mid)
+          .then((mDoc) async {
+        // resolve profile
+        UserProfile mProfile =
+            await ses.getProfile(uname: mDoc.data['sourceId']);
+
+        // return message
+        return Message.fromDoc(doc: mDoc, profile: mProfile);
+      });
 
   markAllRead({required SessionController ses}) async {
     List<String> processed = [];
@@ -37,16 +49,34 @@ class ChatController extends GetxController {
       if (msg.profile.username != ses.username.value &&
           !msg.seen &&
           !processed.contains(msg.id)) {
-        // mark read
-        await ses.updateDoc(
-          collectionName: 'messages',
-          docId: msg.id,
-          data: {"isRead": true},
-        ).then((_) => msg.seen = true);
+        // init readers
+        List<String> readers = [];
+        if (msg.grpDst) {
+          // get current status for message
+          Message currentMessage = await getMessage(ses: ses, mid: msg.id);
+
+          // add existing readers from current message
+          readers.addAll(currentMessage.readers);
+        }
+
+        if (!readers.contains(ses.username.value)) {
+          // add user
+          readers.add(ses.username.value);
+          // mark read
+          await ses.updateDoc(
+            collectionName: 'messages',
+            docId: msg.id,
+            data: {"isRead": readers},
+          ).then((_) {
+            // update message
+            msg.seen = true;
+            msg.readers = readers;
+          });
+        }
+
         processed.add(msg.id);
       }
     }
-    update();
   }
 
   Future getGroups({required SessionController sc}) async {
@@ -79,7 +109,8 @@ class ChatController extends GetxController {
           int cnt = 0;
           for (aw.Document mDoc in msgDocs) {
             // only count ones not read by me
-            if (!mDoc.data['isRead'].contains(sc.username.value)) {
+            if (!mDoc.data['isRead'].contains(sc.username.value) &&
+                mDoc.data['sourceId'] != sc.username.value) {
               cnt += 1;
             }
           }
@@ -201,22 +232,34 @@ class ChatController extends GetxController {
   Future<List<aw.Document>> getGroupConversation(
           {required SessionController ses, required String groupId}) async =>
       await ses.getDocs(collectionName: 'messages', queries: [
-        Query.search('entitiesId', '"$groupId"'),
+        Query.search('entitiesId', groupId),
         Query.orderDesc('\$createdAt'),
         Query.limit(11),
       ]).then((docs) => docs.documents.length > 0 ? docs.documents : []);
 
   Future getMessages(
       {required SessionController ses,
-      required String username,
-      required bool bottom}) async {
+      required String entityId,
+      required bool bottom,
+      required bool isGroup}) async {
     // define global queries
     List<String> queries = [
-      Query.equal('sourceId', [ses.username.value, username]),
-      Query.equal('entitiesId', [username, ses.username.value]),
       Query.orderDesc('\$createdAt'),
       Query.limit(10),
     ];
+
+    if (isGroup) {
+      // add group querries
+      queries.add(
+        Query.search('entitiesId', entityId),
+      );
+    } else {
+      // add 1 on 1 querries
+      queries.addAll([
+        Query.equal('sourceId', [ses.username.value, entityId]),
+        Query.equal('entitiesId', [entityId, ses.username.value]),
+      ]);
+    }
 
     if (bottom && messages.isNotEmpty) {
       queries.add(Query.cursorAfter(messages.last.id));
@@ -233,15 +276,8 @@ class ChatController extends GetxController {
       // process reversed documents order
       for (aw.Document doc in docs.documents) {
         UserProfile owner = await ses.getProfile(uname: doc.data['sourceId']);
-        Message newMessage = Message(
-          id: doc.$id,
-          profile: owner,
-          text: doc.data['text'],
-          created: DateTime.parse(doc.$createdAt),
-          seen: doc.data['isRead'].contains(ses.username.value),
-          video: doc.data['video'] ?? '',
-          link: doc.data['link'] ?? '',
-        );
+        Message newMessage = Message.fromDoc(doc: doc, profile: owner);
+        newMessage.seen = doc.data['isRead'].contains(ses.username.value);
 
         // add images if exists
         if (doc.data['images'].length > 0) {
@@ -255,16 +291,9 @@ class ChatController extends GetxController {
               .then((rDoc) async {
             UserProfile rOwner =
                 await ses.getProfile(uname: rDoc.data['sourceId']);
-            Message refMessage = Message(
-              id: rDoc.$id,
-              profile: rOwner,
-              text: rDoc.data['text'],
-              created: DateTime.parse(rDoc.$createdAt),
-              seen: rDoc.data['isRead'].contains(ses.username.value),
-              video: rDoc.data['video'] ?? '',
-              images: rDoc.data['images'] as List<String>,
-              link: rDoc.data['link'] ?? '',
-            );
+
+            Message refMessage = Message.fromDoc(doc: rDoc, profile: rOwner);
+            refMessage.seen = rDoc.data['isRead'].contains(ses.username.value);
 
             // add images if exists
             if (rDoc.data['images'].length > 0) {
@@ -280,6 +309,9 @@ class ChatController extends GetxController {
         // add message to messages
         messages.add(newMessage);
       }
+
+      // update loading interface
+      loadingMessages.value = false;
     });
   }
 }

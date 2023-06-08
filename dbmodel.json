@@ -14,7 +14,7 @@
         "requestIds[36]": "array",
         "dstEntities[50]": "array"
     },
-    "messages(permissions=**--)": {
+    "messages(permissions=****)": {
         "*sourceId[36]": "str",
         "*text[200]": "str",
         "replyId[36]": "str",
@@ -26,7 +26,8 @@
         "lng": "double",
         "isPrivate(default=false)": "bool",
         "isRead[36]": "array",
-        "entitiesId[36]": "str"
+        "entitiesId[36]": "str",
+        "toGroup(default=false)": "bool"
     },
     "atlas(permissions=***-)": {
         "tag[20]": "str",

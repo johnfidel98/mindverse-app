@@ -53,8 +53,10 @@ class Message {
   String video;
   String link;
   List<String> tags;
+  List<String> readers;
   DateTime? created;
   bool seen;
+  bool grpDst;
   Message? reply;
 
   // use default values if not provided
@@ -63,8 +65,10 @@ class Message {
     required this.profile,
     required this.text,
     this.images = const [],
+    this.readers = const [],
     this.video = '',
     this.link = '',
+    this.grpDst = false,
     this.tags = const [],
     this.seen = false,
     this.reply,
@@ -73,24 +77,34 @@ class Message {
     this.created = created ?? DateTime.now().toUtc();
   }
 
-  factory Message.fromDoc(Document doc) {
+  factory Message.fromDoc(
+      {required Document doc, required UserProfile profile}) {
     // init from doc
     return Message(
-      id: '',
-      profile: UserProfile(username: 'unknown'),
+      id: doc.$id,
+      profile: profile,
       text: doc.data['text'],
+      grpDst: doc.data['toGroup'] ?? false,
+      created: DateTime.parse(doc.$createdAt),
+      video: doc.data['video'] ?? '',
+      link: doc.data['link'] ?? '',
+      readers: doc.data['isRead'].cast<String>(),
     );
   }
 
-  // factory Message.fromJson(Map json) {
-  //   // init from json
-  //   return Message(
-  //     name: json['name'],
-  //     avatar: json['avatar'],
-  //     username: json["\$id"],
-  //     bio: json['bio'],
-  //   );
-  // }
+  factory Message.fromJson({required Map json, required UserProfile profile}) {
+    // init from json
+    return Message(
+      id: json['\$id'],
+      profile: profile,
+      text: json['text'],
+      grpDst: json['toGroup'] ?? false,
+      created: DateTime.parse(json['\$createdAt']),
+      video: json['video'] ?? '',
+      link: json['link'] ?? '',
+      readers: json['isRead'],
+    );
+  }
 }
 
 class Conversation {
