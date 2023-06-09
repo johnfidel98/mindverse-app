@@ -100,12 +100,17 @@ class _ConversationsTabState extends State<ConversationsTab> {
           ),
         ),
         SlidingUpPanel(
+          color: Colors.grey.shade200,
           maxHeight: MediaQuery.of(context).size.height / 1.5,
           minHeight: 20,
           controller: _controllerSlidePanel,
-          panel: ContactListing(
-            onDrawer: true,
-            cancel: () => _controllerSlidePanel.close(),
+          panel: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: ContactListing(
+              known: true,
+              onDrawer: true,
+              cancel: () => _controllerSlidePanel.close(),
+            ),
           ),
         ),
       ],

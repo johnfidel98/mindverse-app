@@ -167,7 +167,8 @@ class ChatController extends GetxController {
         int cnt = 0;
         for (aw.Document mDoc in msgDocs) {
           // only count ones not read by me
-          if (!mDoc.data['isRead'].contains(username)) {
+          if (!mDoc.data['isRead'].contains(username) &&
+              username != sc.username.value) {
             cnt += 1;
           }
         }

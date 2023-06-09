@@ -209,3 +209,28 @@ class MVNotification {
     required this.id,
   });
 }
+
+class MVContact {
+  // contact object
+  UserProfile? profile;
+  String? username;
+  bool matched;
+  String? email;
+
+  MVContact({
+    this.profile,
+    this.username,
+    required this.matched,
+    this.email,
+  });
+
+  factory MVContact.fromJson({required Map json, UserProfile? profile}) {
+    // init from json
+    return MVContact(
+      profile: profile,
+      matched: json['s'] == 1,
+      username: json['u'],
+      email: json['e'],
+    );
+  }
+}

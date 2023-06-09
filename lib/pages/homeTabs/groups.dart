@@ -41,10 +41,10 @@ class _GroupsTabState extends State<GroupsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => cc.groups.isNotEmpty
-        ? Stack(
-            children: [
-              SingleChildScrollView(
+    return Stack(
+      children: [
+        Obx(() => cc.groups.isNotEmpty
+            ? SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 6.0, vertical: 8.0),
@@ -78,30 +78,31 @@ class _GroupsTabState extends State<GroupsTab> {
                     ],
                   ),
                 ),
-              ),
-              SlidingUpPanel(
-                maxHeight: 270,
-                minHeight: 0,
-                controller: _controllerSlidePanel,
-                panel: GroupCreate(
-                  cancel: () => _controllerSlidePanel.close(),
-                ),
               )
-            ],
-          )
-        : cc.loadingGroups.value && !cc.firstLoadGroups.value
-            ? const Padding(
-                padding: EdgeInsets.only(top: 30),
-                child: GeneralLoading(
-                  artifacts: 'Groups',
-                ),
-              )
-            : EmptyMsg(
-                lottiePath: 'assets/lottie/16952-group-working.json',
-                title: 'Groups',
-                message: 'Connect and discuss with several like minded people!',
-                child: getGroupsAction(),
-              ));
+            : cc.loadingGroups.value && !cc.firstLoadGroups.value
+                ? const Padding(
+                    padding: EdgeInsets.only(top: 30),
+                    child: GeneralLoading(
+                      artifacts: 'Groups',
+                    ),
+                  )
+                : EmptyMsg(
+                    lottiePath: 'assets/lottie/16952-group-working.json',
+                    title: 'Groups',
+                    message:
+                        'Connect and discuss with several like minded people!',
+                    child: getGroupsAction(),
+                  )),
+        SlidingUpPanel(
+          maxHeight: 270,
+          minHeight: 0,
+          controller: _controllerSlidePanel,
+          panel: GroupCreate(
+            cancel: () => _controllerSlidePanel.close(),
+          ),
+        )
+      ],
+    );
   }
 
   InterfaceButton getGroupsAction() => InterfaceButton(
@@ -168,7 +169,7 @@ class _GroupCreateState extends State<GroupCreate> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: Colors.grey[200],
       padding: const EdgeInsets.symmetric(
         vertical: 30,
         horizontal: 20,

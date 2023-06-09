@@ -11,6 +11,10 @@ class SessionController extends GetxController {
   var onlineStatus = RxMap({});
   var notifications = RxList([]);
 
+  var contactsKnown = RxList([]);
+  var contactsUnknown = RxList([]);
+  var processedContactIds = RxList([]);
+
   var profiles = RxMap();
   var groups = RxMap();
   var prefs = RxMap();
@@ -27,6 +31,7 @@ class SessionController extends GetxController {
 
   late final Client _client;
   late final Account _account;
+  late final Functions _function;
   late final Databases _database;
   late final Realtime _realtime;
 
@@ -34,80 +39,14 @@ class SessionController extends GetxController {
 
   Map collections = {};
   Map storages = {};
-
-  Future sendVerification() => _account.createVerification(
-        url: '${_appDetails.website}/verification',
-      );
-
-  setActionStatus(bool result) => actionStatus.value = result;
-
-  setBio(String txt) => bio.value = txt;
-
-  setLoc(bool en) => enLocation.value = en;
-
-  setName(String nme) => name.value = nme;
-
-  getRealtime() => _realtime;
-
-  getAppDetails() => _appDetails;
-
-  getCollections() => collections;
-
-  Future getNotifications() async =>
-      await getDocs(collectionName: 'notifications', queries: [
-        Query.search('destinationId', username.value),
-        Query.orderDesc('\$createdAt'),
-        Query.limit(100),
-      ]).then((res) async {
-        // clear current notifications
-        notifications.clear();
-
-        for (aw.Document doc in res.documents) {
-          // sync profile
-          UserProfile profile = await getProfile(uname: doc.data['sourceId']);
-
-          // process notification
-          notifications.add(MVNotification(
-            id: doc.$id,
-            title: doc.data['title'],
-            profile: profile,
-            created: DateTime.parse(doc.$createdAt),
-            body: jsonDecode(doc.data['body']),
-          ));
-        }
-      });
-
-  Future removeNotification(
-          {required int index, required String docId}) async =>
-      await deleteDoc(collectionName: 'notifications', docId: docId).then((_) {
-        notifications.removeAt(index);
-        notifications.refresh();
-      });
-
-  Future setUserDetails() => _account.get().then((account) async {
-        // update user details
-        userId.value = account.$id;
-        name.value = account.name;
-        verified.value = account.emailVerification || account.phoneVerification;
-        email.value = account.email;
-
-        for (var pKey in account.prefs.data.keys) {
-          if (pKey == 'username') {
-            username.value = account.prefs.data['username'];
-          }
-          prefs[pKey] = account.prefs.data[pKey];
-        }
-
-        onlineStatus[username.value] = DateTime.now().toUtc();
-
-        return true;
-      }).catchError((exception) => false);
+  Map functions = {};
 
   Future _loadEnvVariables() async {
     await dotenv.load(fileName: ".env");
 
     collections = jsonDecode(dotenv.env['COLLECTIONS']!);
     storages = jsonDecode(dotenv.env['STORAGES']!);
+    functions = jsonDecode(dotenv.env['FUNCTIONS']!);
   }
 
   Future<Account> init() async {
@@ -128,6 +67,7 @@ class SessionController extends GetxController {
     _account = Account(_client);
     _database = Databases(_client);
     _realtime = Realtime(_client);
+    _function = Functions(_client);
     return _account;
   }
 
@@ -236,9 +176,35 @@ class SessionController extends GetxController {
     });
   }
 
-  Future getContacts({required String uname}) =>
-      getDoc(collectionName: "secrets", docId: uname)
-          .then((doc) => doc.data['contacts']);
+  Future<List<Map>> getContacts({required String uname}) =>
+      getDoc(collectionName: "secrets", docId: uname).then((doc) async {
+        List<Map> processedContacts = [];
+        for (String c in doc.data['contacts']) {
+          Map cData = json.decode(c);
+
+          if (!processedContactIds.contains(cData['e'])) {
+            MVContact cnt = MVContact.fromJson(json: cData);
+
+            if (cnt.matched) {
+              // resolve profile details
+              cnt.profile = await getProfile(uname: cnt.username!);
+
+              // add to known contacts
+              contactsKnown.add(cnt);
+            } else {
+              // add to unknown contacts
+              contactsUnknown.add(cnt);
+            }
+
+            // set id to avoid future duplicates
+            processedContactIds.add(cData['e']);
+          }
+
+          processedContacts.add(cData);
+        }
+
+        return processedContacts;
+      });
 
   Future<aw.DocumentList> getDocs(
           {required String collectionName, List<String>? queries}) =>
@@ -287,4 +253,77 @@ class SessionController extends GetxController {
 
   Future updateProfile({required Map data}) =>
       updateDoc(collectionName: 'profiles', docId: username.value, data: data);
+
+  Future sendVerification() => _account.createVerification(
+        url: '${_appDetails.website}/verification',
+      );
+
+  Future getNotifications() async =>
+      await getDocs(collectionName: 'notifications', queries: [
+        Query.search('destinationId', username.value),
+        Query.orderDesc('\$createdAt'),
+        Query.limit(100),
+      ]).then((res) async {
+        // clear current notifications
+        notifications.clear();
+
+        for (aw.Document doc in res.documents) {
+          // sync profile
+          UserProfile profile = await getProfile(uname: doc.data['sourceId']);
+
+          // process notification
+          notifications.add(MVNotification(
+            id: doc.$id,
+            title: doc.data['title'],
+            profile: profile,
+            created: DateTime.parse(doc.$createdAt),
+            body: jsonDecode(doc.data['body']),
+          ));
+        }
+      });
+
+  Future removeNotification(
+          {required int index, required String docId}) async =>
+      await deleteDoc(collectionName: 'notifications', docId: docId).then((_) {
+        notifications.removeAt(index);
+        notifications.refresh();
+      });
+
+  Future setUserDetails() => _account.get().then((account) async {
+        // update user details
+        userId.value = account.$id;
+        name.value = account.name;
+        verified.value = account.emailVerification || account.phoneVerification;
+        email.value = account.email;
+
+        for (var pKey in account.prefs.data.keys) {
+          if (pKey == 'username') {
+            username.value = account.prefs.data['username'];
+          }
+          prefs[pKey] = account.prefs.data[pKey];
+        }
+
+        onlineStatus[username.value] = DateTime.now().toUtc();
+
+        return true;
+      }).catchError((exception) => false);
+
+  Future startConversation({required String uname}) async =>
+      await _function.createExecution(
+          functionId: functions['conversations_processor'],
+          data: json.encode({"username1": username.value, "username2": uname}));
+
+  setActionStatus(bool result) => actionStatus.value = result;
+
+  setBio(String txt) => bio.value = txt;
+
+  setLoc(bool en) => enLocation.value = en;
+
+  setName(String nme) => name.value = nme;
+
+  getRealtime() => _realtime;
+
+  getAppDetails() => _appDetails;
+
+  getCollections() => collections;
 }

@@ -133,6 +133,7 @@ class InterfaceButton extends StatelessWidget {
   final IconData? icon;
   final bool? alt;
   final double size;
+  final Widget? iconWidget;
 
   const InterfaceButton({
     super.key,
@@ -140,6 +141,7 @@ class InterfaceButton extends StatelessWidget {
     this.onPressed,
     this.alt = false,
     this.bgColor,
+    this.iconWidget,
     this.icon,
     this.size = 0,
   });
@@ -176,6 +178,7 @@ class InterfaceButton extends StatelessWidget {
                     color: alt! ? htSolid5 : Colors.white,
                     size: 20,
                   ),
+                if (iconWidget != null) iconWidget!,
                 const SizedBox(width: 5),
                 Text(
                   label,

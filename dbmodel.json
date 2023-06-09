@@ -36,12 +36,13 @@
     },
     "secrets(security=true)": {
         "conversations[50]": "array",
-        "contacts[50]": "array"
+        "contacts[100]": "array"
     },
     "notifications(permissions=-*-*)": {
         "title[50]": "str",
         "body[200](default='{}')": "json(str)",
         "*sourceId[36]": "str",
-        "*destinationId[50]": "str"
+        "*destinationId[50]": "str",
+        "processed(default=false)": "bool"
     }
 }

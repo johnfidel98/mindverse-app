@@ -96,36 +96,57 @@ class GeneralLoading extends StatelessWidget {
   const GeneralLoading({
     super.key,
     this.artifacts = '...',
+    this.message,
   });
 
   final String? artifacts;
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(
-            height: 180,
-            width: 180,
-            child: CircularProgressIndicator(
-              color: htSolid5,
-              strokeWidth: 1,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 50.0),
-            child: Text(
-              'Loading $artifacts',
-              style: const TextStyle(
-                fontSize: 24,
-                color: htSolid5,
-                fontStyle: FontStyle.italic,
+    return Container(
+      color: Colors.white54,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(
+                height: 150,
+                width: 150,
+                child: CircularProgressIndicator(
+                  color: htSolid5,
+                  strokeWidth: 1,
+                ),
               ),
-            ),
-          )
-        ],
+              Padding(
+                padding: const EdgeInsets.only(top: 50.0),
+                child: Text(
+                  'Loading $artifacts',
+                  style: defaultTextStyle.copyWith(
+                    fontSize: 24,
+                    color: htSolid5,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+              if (message != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 15.0),
+                  child: Text(
+                    '$message',
+                    style: defaultTextStyle.copyWith(
+                      fontSize: 20,
+                      color: htSolid4,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+            ],
+          ),
+        ),
       ),
     );
   }
