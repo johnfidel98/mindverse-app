@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:appwrite/models.dart' as aw;
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:mindverse/components/ad.dart';
 import 'package:mindverse/controllers/chat.dart';
 import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/pages/conversation.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:mindverse/components/avatar.dart';
 import 'package:mindverse/components/button.dart';
 import 'package:mindverse/components/text_input.dart';
@@ -23,101 +25,69 @@ class _GroupsTabState extends State<GroupsTab> {
   final SessionController sc = Get.find<SessionController>();
   final ChatController cc = Get.find<ChatController>();
 
-  final TextEditingController gc = TextEditingController();
-
-  String groupName = '';
-  bool createGroupEnabled = true;
+  late final PanelController _controllerSlidePanel;
 
   @override
   void initState() {
     super.initState();
 
+    _controllerSlidePanel = PanelController();
+
     // get groups where im member
     cc.getGroups(sc: sc);
-
-    // listen to group name changes
-    gc.addListener(onGroupNameChanged);
   }
 
-  void onGroupNameChanged() => setState(() {
-        groupName = gc.text;
-      });
-
-  void createGroup() {
-    // prompt user the group name
-    showAlertDialog(
-      context: context,
-      title: null,
-      msg: 'Create a new group!',
-      msgWidget: Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: MVTextInput(
-          hintText: "Group Name",
-          controller: gc,
-        ),
-      ),
-      footer: 'N/B: Members can later search for your group and join!',
-      onOk: () {
-        // disable create group button
-        setState(() {
-          createGroupEnabled = false;
-        });
-
-        sc.createDoc(collectionName: 'groups', data: {
-          "sourceId": sc.username.value,
-          "name": groupName,
-          "dstEntities": [sc.username.value],
-        }).then((_) {
-          // clear previous group name
-          gc.clear();
-
-          // reset group button
-          setState(() {
-            createGroupEnabled = true;
-          });
-
-          // todo: navigate to group after creation
-        });
-      },
-    );
-  }
+  void openGroupCreatePanel() => _controllerSlidePanel.open();
 
   @override
   Widget build(BuildContext context) {
     return Obx(() => cc.groups.isNotEmpty
-        ? SingleChildScrollView(
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  HomeTitle(
-                    title: 'Groups',
-                    statsWidget: getGroupsAction(),
+        ? Stack(
+            children: [
+              SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6.0, vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      HomeTitle(
+                        title: 'Groups',
+                        statsWidget: getGroupsAction(),
+                      ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const ClampingScrollPhysics(),
+                        itemCount: cc.groups.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          Group g = cc.groups[index];
+                          return Column(
+                            children: [
+                              GroupTile(grp: g),
+                              index % 4 == 0
+                                  ? const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 2),
+                                      child: NativeAdvert(),
+                                    )
+                                  : const SizedBox(),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const ClampingScrollPhysics(),
-                    itemCount: cc.groups.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      Group g = cc.groups[index];
-                      return Column(
-                        children: [
-                          GroupTile(grp: g),
-                          index % 4 == 0
-                              ? const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 2),
-                                  child: NativeAdvert(),
-                                )
-                              : const SizedBox(),
-                        ],
-                      );
-                    },
-                  ),
-                ],
+                ),
               ),
-            ),
+              SlidingUpPanel(
+                maxHeight: 270,
+                minHeight: 0,
+                controller: _controllerSlidePanel,
+                panel: GroupCreate(
+                  cancel: () => _controllerSlidePanel.close(),
+                ),
+              )
+            ],
           )
         : cc.loadingGroups.value && !cc.firstLoadGroups.value
             ? const Padding(
@@ -137,9 +107,120 @@ class _GroupsTabState extends State<GroupsTab> {
   InterfaceButton getGroupsAction() => InterfaceButton(
         label: 'Create Group',
         icon: Icons.group_add,
-        onPressed: createGroupEnabled ? createGroup : null,
-        bgColor: createGroupEnabled ? null : Colors.grey,
+        onPressed: openGroupCreatePanel,
       );
+}
+
+class GroupCreate extends StatefulWidget {
+  const GroupCreate({Key? key, required this.cancel}) : super(key: key);
+
+  final Function() cancel;
+
+  @override
+  State<GroupCreate> createState() => _GroupCreateState();
+}
+
+class _GroupCreateState extends State<GroupCreate> {
+  final SessionController sc = Get.find<SessionController>();
+  final ChatController cc = Get.find<ChatController>();
+
+  final TextEditingController gc = TextEditingController();
+
+  bool groupPrivacy = false;
+  String groupName = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    // get groups where im member
+    cc.getGroups(sc: sc);
+
+    // listen to group name changes
+    gc.addListener(onGroupNameChanged);
+  }
+
+  void onGroupNameChanged() => setState(() => groupName = gc.text);
+
+  void onGroupPrivacyChanged(bool c) => setState(() => groupPrivacy = c);
+
+  void createGroup() {
+    sc.createDoc(collectionName: 'groups', data: {
+      "sourceId": sc.username.value,
+      "name": groupName,
+      "isPrivate": groupPrivacy,
+      "dstEntities": [sc.username.value],
+    }).then((aw.Document gDoc) {
+      // clear previous group name
+      gc.clear();
+
+      // go back to groups list
+      widget.cancel();
+
+      // navigate to group after creation
+      Get.to(() => ConversationPage(
+            entityId: gDoc.$id,
+            isGrp: true,
+          ));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(
+        vertical: 30,
+        horizontal: 20,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Text('Create Group',
+                style: defaultTextStyle.copyWith(fontSize: 20)),
+          ),
+          MVTextInput(hintText: "Group Name", controller: gc),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Private Group',
+                  style: defaultTextStyle.copyWith(fontSize: 18),
+                ),
+                Switch(value: groupPrivacy, onChanged: onGroupPrivacyChanged),
+              ],
+            ),
+          ),
+          Row(
+            children: [
+              InterfaceButton(
+                onPressed: widget.cancel,
+                label: 'Cancel',
+                size: 3,
+                alt: true,
+              ),
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: InterfaceButton(
+                    onPressed: createGroup,
+                    label: 'Create Group',
+                    size: 3,
+                    icon: Icons.group_add,
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
 
   @override
   void dispose() {

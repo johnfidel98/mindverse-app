@@ -12,6 +12,8 @@ class MVButton extends StatefulWidget {
   final Color? bGcolor;
   final Color? txtColor;
   final double paddingH;
+  final bool monitorState;
+  final bool alt;
 
   const MVButton({
     Key? key,
@@ -19,6 +21,8 @@ class MVButton extends StatefulWidget {
     required this.label,
     this.bGcolor,
     this.txtColor,
+    this.alt = false,
+    this.monitorState = true,
     this.paddingH = 30,
   }) : super(key: key);
 
@@ -35,18 +39,23 @@ class _MVButtonState extends State<MVButton> {
   void initState() {
     super.initState();
 
-    _listener = _session.actionStatus.listen((statusComplete) {
-      if (statusComplete) {
-        setState(() {
-          _loading = false;
-        });
-      }
-    });
+    if (widget.monitorState) {
+      _listener = _session.actionStatus.listen((statusComplete) {
+        if (statusComplete) {
+          setState(() {
+            _loading = false;
+          });
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
-    _listener.cancel();
+    if (widget.monitorState) {
+      _listener.cancel();
+    }
+
     super.dispose();
   }
 
@@ -59,7 +68,10 @@ class _MVButtonState extends State<MVButton> {
           padding: EdgeInsets.symmetric(horizontal: widget.paddingH),
           child: TextButton(
             onPressed: () {
-              _session.setActionStatus(false);
+              if (widget.monitorState) {
+                _session.setActionStatus(false);
+              }
+
               setState(() {
                 _loading = true;
               });
@@ -69,13 +81,14 @@ class _MVButtonState extends State<MVButton> {
               textStyle: MaterialStatePropertyAll(
                 GoogleFonts.overpass(
                   textStyle: TextStyle(
-                    color: widget.txtColor ?? Colors.white,
+                    color:
+                        widget.alt ? htSolid5 : widget.txtColor ?? Colors.white,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              backgroundColor:
-                  MaterialStatePropertyAll(widget.bGcolor ?? Colors.black87),
+              backgroundColor: MaterialStatePropertyAll(
+                  widget.alt ? null : widget.bGcolor ?? Colors.black87),
               padding: const MaterialStatePropertyAll(
                   EdgeInsets.symmetric(vertical: 15)),
               shape: MaterialStatePropertyAll(
@@ -117,15 +130,18 @@ class InterfaceButton extends StatelessWidget {
   final String label;
   final Function()? onPressed;
   final Color? bgColor;
-  final IconData icon;
+  final IconData? icon;
   final bool? alt;
+  final double size;
+
   const InterfaceButton({
     super.key,
     required this.label,
     this.onPressed,
     this.alt = false,
     this.bgColor,
-    required this.icon,
+    this.icon,
+    this.size = 0,
   });
 
   @override
@@ -133,38 +149,47 @@ class InterfaceButton extends StatelessWidget {
     return InkWell(
       child: TextButton(
           style: ButtonStyle(
-            elevation: const MaterialStatePropertyAll(2),
+            elevation: MaterialStatePropertyAll(alt! ? null : 2),
             overlayColor: const MaterialStatePropertyAll(htTrans1),
             backgroundColor:
-                MaterialStatePropertyAll(alt! ? htSolid2 : bgColor ?? htSolid3),
+                MaterialStatePropertyAll(alt! ? null : bgColor ?? htSolid3),
             padding: const MaterialStatePropertyAll(
               EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
             ),
             shape: MaterialStatePropertyAll(
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                  side: alt!
+                      ? const BorderSide(color: htSolid3)
+                      : BorderSide.none),
             ),
           ),
           onPressed: onPressed,
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.overpass(
-                  textStyle: defaultTextStyle.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      height: 1.5),
+          child: Padding(
+            padding: EdgeInsets.all(size),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null)
+                  Icon(
+                    icon,
+                    color: alt! ? htSolid5 : Colors.white,
+                    size: 20,
+                  ),
+                const SizedBox(width: 5),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.overpass(
+                    textStyle: defaultTextStyle.copyWith(
+                        color: alt! ? htSolid5 : Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16 + size,
+                        height: 1.5),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           )),
     );
   }

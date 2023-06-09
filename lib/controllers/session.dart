@@ -240,19 +240,22 @@ class SessionController extends GetxController {
       getDoc(collectionName: "secrets", docId: uname)
           .then((doc) => doc.data['contacts']);
 
-  Future getDocs({required String collectionName, List<String>? queries}) =>
+  Future<aw.DocumentList> getDocs(
+          {required String collectionName, List<String>? queries}) =>
       _database.listDocuments(
           databaseId: _appDetails.databaseId,
           collectionId: collections[collectionName],
           queries: queries);
 
-  Future getDoc({required String collectionName, required String docId}) =>
+  Future<aw.Document> getDoc(
+          {required String collectionName, required String docId}) =>
       _database.getDocument(
           databaseId: _appDetails.databaseId,
           collectionId: collections[collectionName],
           documentId: docId);
 
-  Future createDoc({required String collectionName, required Map data}) =>
+  Future<aw.Document> createDoc(
+          {required String collectionName, required Map data}) =>
       _database.createDocument(
           databaseId: _appDetails.databaseId,
           collectionId: collections[collectionName],
