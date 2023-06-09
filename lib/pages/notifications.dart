@@ -118,7 +118,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       );
                     },
                   )
-                : EmptyDone(),
+                : const EmptyDone(),
           ),
         ),
       ),

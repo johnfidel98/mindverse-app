@@ -224,7 +224,7 @@ class ChatController extends GetxController {
         Query.equal('entitiesId', [username, ses.username.value]),
         Query.orderDesc('\$createdAt'),
         Query.limit(11),
-      ]).then((docs) => docs.documents.length > 0 ? docs.documents : []);
+      ]).then((docs) => docs.documents.isNotEmpty ? docs.documents : []);
 
   Future<List<aw.Document>> getGroupConversation(
           {required SessionController ses, required String groupId}) async =>
@@ -232,7 +232,7 @@ class ChatController extends GetxController {
         Query.search('entitiesId', groupId),
         Query.orderDesc('\$createdAt'),
         Query.limit(11),
-      ]).then((docs) => docs.documents.length > 0 ? docs.documents : []);
+      ]).then((docs) => docs.documents.isNotEmpty ? docs.documents : []);
 
   Future getMessages(
       {required SessionController ses,
