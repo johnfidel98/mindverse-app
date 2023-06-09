@@ -8,44 +8,6 @@ import 'package:mindverse/models.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';
 
-// avatar naming
-const Map avatarDict = {
-  '02-man': 'Jeff Avatar',
-  '16-girl': 'Nancy Avatar',
-};
-
-// avatar listing
-const List<PopupMenuItem<String>> avatars = [
-  PopupMenuItem<String>(
-    value: '02-man',
-    child: PopSetupEntry(avatar: '02-man'),
-  ),
-  PopupMenuItem<String>(
-    value: '16-girl',
-    child: PopSetupEntry(avatar: '16-girl'),
-  ),
-];
-
-class PopSetupEntry extends StatelessWidget {
-  final String avatar;
-  const PopSetupEntry({
-    super.key,
-    required this.avatar,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Image.asset('assets/avatars/$avatar/$avatar.png',
-            height: 30, width: 30),
-        const SizedBox(width: 5),
-        Text(avatarDict[avatar]),
-      ],
-    );
-  }
-}
-
 class StaticAvatarSegment extends StatelessWidget {
   final double size;
   final String path;

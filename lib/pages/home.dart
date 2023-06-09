@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage> {
   late Timer _timerNotifications;
   late Timer _timerGroupsUpdate;
   late Timer _timerConversationsUpdate;
+  late Timer _timerOnlinePulse;
 
   @override
   void initState() {
@@ -40,6 +41,14 @@ class _HomePageState extends State<HomePage> {
     // get personal conversations
     cc.getConversations(sc: sc, username: sc.username.value);
 
+    // update online presence now
+    setOnlineNow();
+
+    // update online presence every 60 sec
+    _timerOnlinePulse = Timer.periodic(
+        const Duration(seconds: 60), (_) async => await setOnlineNow());
+
+    // update conversations
     _timerConversationsUpdate = Timer.periodic(
         const Duration(seconds: 15),
         (_) async =>
@@ -60,6 +69,9 @@ class _HomePageState extends State<HomePage> {
             // update groups where im member
             await cc.getGroups(sc: sc));
   }
+
+  Future setOnlineNow() async => await sc
+      .updateProfile(data: {"lastOnline": DateTime.now().toUtc().toString()});
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +169,10 @@ class _HomePageState extends State<HomePage> {
 
     if (_timerConversationsUpdate.isActive) {
       _timerConversationsUpdate.cancel();
+    }
+
+    if (_timerOnlinePulse.isActive) {
+      _timerOnlinePulse.cancel();
     }
 
     if (_timerGroupsUpdate.isActive) {
