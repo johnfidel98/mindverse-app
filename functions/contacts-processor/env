@@ -1,4 +1,3 @@
 SECRETS_COL_ID=<Secrets Collection ID>
-DATABASE_ID=<Database ID>
 HT_FUNCTION_ENDPOINT=http://cloud.appwrite.com/v1
 HT_FUNCTION_API_KEY=<API Key>

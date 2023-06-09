@@ -1,6 +1,5 @@
 import json
 from appwrite.client import Client
-from appwrite.query import Query
 from appwrite.services.databases import Databases
 
 
