@@ -148,6 +148,7 @@ class _ContactListingState extends State<ContactListing>
                   : InterfaceButton(
                       label: 'Sync Contacts',
                       onPressed: processContacts,
+                      bgColor: syncingContacts ? htSolid2 : null,
                       iconWidget: syncingContacts
                           ? Container(
                               width: 19,
