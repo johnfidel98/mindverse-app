@@ -43,6 +43,31 @@ class ContactsTab extends StatelessWidget {
   }
 }
 
+class ContactListing extends StatelessWidget {
+  const ContactListing({Key? key, required this.cancel, this.onDrawer = false})
+      : super(key: key);
+
+  final Function() cancel;
+  final bool onDrawer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        if (onDrawer)
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width / 4),
+            child: const Divider(
+              color: htSolid5,
+              thickness: 5,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class ContactTile extends StatelessWidget {
   const ContactTile({
     super.key,
