@@ -55,7 +55,7 @@ def main(req, res):
                 # Check contacts for any unprocessed item
                 if contact['s'] != 1:
                     # Process unprocessed items
-                    newC = {'s': 0, 'e': contact['e'], 'u': ''}
+                    newC = {'s': 0, 'e': contact['e'], 'u': '', 'n': contact['n']}
 
                     # Check if email exists in the system
                     try:
@@ -68,6 +68,7 @@ def main(req, res):
 
                         # Get username in prefs
                         newC['u'] = users_list['users'][0]['prefs']['username']
+                        newC['n'] = users_list['users'][0]['name']
                         newC['s'] = 1
                         
                         state = 'Updated'

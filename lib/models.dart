@@ -216,6 +216,7 @@ class MVContact {
   // contact object
   UserProfile? profile;
   String? username;
+  String? name;
   bool matched;
   String? email;
 
@@ -224,17 +225,18 @@ class MVContact {
     this.username,
     required this.matched,
     this.email,
+    this.name,
   });
 
-  factory MVContact.fromJson({required Map json, UserProfile? profile}) {
-    // init from json
-    return MVContact(
-      profile: profile,
-      matched: json['s'] == 1,
-      username: json['u'],
-      email: json['e'],
-    );
-  }
+  factory MVContact.fromJson({required Map json, UserProfile? profile}) =>
+      // init from json
+      MVContact(
+        profile: profile,
+        matched: json['s'] == 1,
+        username: json['u'],
+        name: json['n'],
+        email: json['e'],
+      );
 
   toJson() =>
       // transform to json
@@ -242,5 +244,6 @@ class MVContact {
         'e': email!,
         'u': username!,
         's': matched ? 1 : 0,
+        'n': name,
       });
 }

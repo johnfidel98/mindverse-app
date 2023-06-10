@@ -81,7 +81,7 @@ class _ContactListingState extends State<ContactListing>
           if (!processedEmails.contains(e.address)) {
             // add email
             processedEmails.add(e.address);
-            mContacts[e.address] = "";
+            mContacts[e.address] = {"n": '${c.name.first} ${c.name.last}'};
           }
         }
       }
@@ -99,7 +99,7 @@ class _ContactListingState extends State<ContactListing>
         // merge contacts
         for (String em in mContacts.keys) {
           aContacts.add(MVContact.fromJson(
-            json: {"e": em, "u": "", "s": 0},
+            json: {"e": em, "u": "", "s": 0, "n": mContacts[em]['n']},
           ));
         }
 
@@ -224,14 +224,16 @@ class ContactTile extends StatelessWidget {
           children: [
             Row(
               children: [
-                AvatarSegment(
-                  userProfile:
-                      cnt.profile ?? UserProfile(username: unknownBastard),
-                  size: 60,
-                  expanded: false,
-                ),
+                if (cnt.profile != null)
+                  AvatarSegment(
+                    userProfile:
+                        cnt.profile ?? UserProfile(username: unknownBastard),
+                    size: 60,
+                    expanded: false,
+                  ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
+                  padding:
+                      EdgeInsets.only(left: cnt.profile != null ? 8.0 : 0.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -244,7 +246,9 @@ class ContactTile extends StatelessWidget {
                       Text(
                         cnt.profile != null
                             ? cnt.profile!.name
-                            : 'Unknown Person',
+                            : cnt.name != null
+                                ? cnt.name!
+                                : 'Unknown Person',
                         style: defaultTextStyle.copyWith(
                             fontSize: 18, height: 1.4, color: htSolid5),
                       ),
