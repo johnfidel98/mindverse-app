@@ -194,25 +194,32 @@ class _ContactListingState extends State<ContactListing>
   }
 }
 
-class ContactTile extends StatelessWidget {
-  ContactTile({
+class ContactTile extends StatefulWidget {
+  const ContactTile({
     super.key,
     required this.cnt,
   });
 
   final MVContact cnt;
 
+  @override
+  State<ContactTile> createState() => _ContactTileState();
+}
+
+class _ContactTileState extends State<ContactTile> {
   final SessionController sc = Get.find<SessionController>();
   final ChatController cc = Get.find<ChatController>();
 
+  bool sentInvite = false;
+
   void startConversation() async {
     // check if conversation exists
-    if (!cc.processedConversationsIds.contains(cnt.username!)) {
+    if (!cc.processedConversationsIds.contains(widget.cnt.username!)) {
       // create conversation
-      await sc.startConversation(uname: cnt.username!);
+      await sc.startConversation(uname: widget.cnt.username!);
     }
     // navigate to conversation
-    Get.to(() => ConversationPage(entityId: cnt.username, isGrp: false));
+    Get.to(() => ConversationPage(entityId: widget.cnt.username, isGrp: false));
   }
 
   @override
@@ -225,33 +232,33 @@ class ContactTile extends StatelessWidget {
           children: [
             Row(
               children: [
-                if (cnt.profile != null)
+                if (widget.cnt.profile != null)
                   GestureDetector(
                     onTap: () =>
-                        Get.to(() => ProfilePage(profile: cnt.profile!)),
+                        Get.to(() => ProfilePage(profile: widget.cnt.profile!)),
                     child: AvatarSegment(
-                      userProfile: cnt.profile!,
+                      userProfile: widget.cnt.profile!,
                       size: 60,
                       expanded: false,
                     ),
                   ),
                 Padding(
-                  padding:
-                      EdgeInsets.only(left: cnt.profile != null ? 8.0 : 0.0),
+                  padding: EdgeInsets.only(
+                      left: widget.cnt.profile != null ? 8.0 : 0.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '${cnt.email}',
+                        '${widget.cnt.email}',
                         style: defaultTextStyle.copyWith(
                             fontSize: 12, height: 1.2, color: htSolid4),
                       ),
                       Text(
-                        cnt.profile != null
-                            ? cnt.profile!.name
-                            : cnt.name != null
-                                ? cnt.name!
+                        widget.cnt.profile != null
+                            ? widget.cnt.profile!.name
+                            : widget.cnt.name != null
+                                ? widget.cnt.name!
                                 : 'Unknown Person',
                         style: defaultTextStyle.copyWith(
                             fontSize: 18, height: 1.4, color: htSolid5),
@@ -261,14 +268,34 @@ class ContactTile extends StatelessWidget {
                 )
               ],
             ),
-            cnt.profile != null
+            widget.cnt.profile != null
                 ? InterfaceButton(
                     onPressed: startConversation,
                     label: 'Chat',
                     icon: Icons.chat_bubble,
                     alt: true)
-                : const InterfaceButton(
-                    label: 'Invite', icon: Icons.add, alt: true),
+                : widget.cnt.email != null
+                    ? InterfaceButton(
+                        label: sentInvite ? 'Sent' : 'Invite',
+                        icon: sentInvite ? Icons.mail_outline : Icons.add,
+                        alt: true,
+                        onPressed: sentInvite
+                            ? () => null
+                            : () =>
+                                sc.sendInvite(email: widget.cnt.email!).then(
+                                  (_) {
+                                    // set invite state
+                                    setState(() => sentInvite = true);
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'Invite sent to ${widget.cnt.email!}')),
+                                    );
+                                  },
+                                ),
+                      )
+                    : const SizedBox(),
           ],
         ),
       ),

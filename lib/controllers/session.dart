@@ -318,6 +318,11 @@ class SessionController extends GetxController {
           functionId: functions['conversations_processor'],
           data: json.encode({"username1": username.value, "username2": uname}));
 
+  Future sendInvite({required String email}) async =>
+      await _function.createExecution(
+          functionId: functions['invites_processor'],
+          data: json.encode({"client": name.value, "invitee_email": email}));
+
   setActionStatus(bool result) => actionStatus.value = result;
 
   setBio(String txt) => bio.value = txt;
