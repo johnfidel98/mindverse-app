@@ -372,7 +372,7 @@ class AccountDropdownSegment extends StatelessWidget {
   final SessionController session = Get.find<SessionController>();
 
   void navMenu(
-      BuildContext context, SessionController session, MVMenuItem item) {
+      BuildContext context, SessionController session, MVMenuItem item) async {
     if (item == MVMenuItem.logout) {
       session.logout().then((_) {
         // notify user
@@ -384,9 +384,11 @@ class AccountDropdownSegment extends StatelessWidget {
         Get.offAllNamed('/auth');
       });
     } else if (item == MVMenuItem.profile) {
-      // navigate to profile
-      Get.to(() =>
-          ProfilePage(profile: UserProfile(username: session.username.value)));
+      // navigate to my profile
+      UserProfile myProfile =
+          await session.getProfile(uname: session.username.value);
+
+      Get.to(() => ProfilePage(profile: myProfile));
     }
   }
 

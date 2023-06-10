@@ -9,6 +9,7 @@ import 'package:mindverse/controllers/chat.dart';
 import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/pages/conversation.dart';
+import 'package:mindverse/pages/profile.dart';
 import 'package:mindverse/utils.dart';
 
 class ContactsTab extends StatelessWidget {
@@ -225,11 +226,14 @@ class ContactTile extends StatelessWidget {
             Row(
               children: [
                 if (cnt.profile != null)
-                  AvatarSegment(
-                    userProfile:
-                        cnt.profile ?? UserProfile(username: unknownBastard),
-                    size: 60,
-                    expanded: false,
+                  GestureDetector(
+                    onTap: () =>
+                        Get.to(() => ProfilePage(profile: cnt.profile!)),
+                    child: AvatarSegment(
+                      userProfile: cnt.profile!,
+                      size: 60,
+                      expanded: false,
+                    ),
                   ),
                 Padding(
                   padding:

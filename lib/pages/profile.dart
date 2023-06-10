@@ -47,29 +47,22 @@ class _ProfilePageState extends State<ProfilePage> {
                     Column(
                       children: [
                         AvatarSegment(
-                          userProfile: UserProfile(username: unknownBastard),
+                          userProfile: widget.profile,
                           expanded: false,
                           size: 160,
                         ),
                         const SizedBox(height: 30),
-                        Obx(
-                          () => NamingSegment(
-                            owner: UserProfile(
-                              username: sc.username.value,
-                              name: sc.name.value,
-                            ),
-                            size: 30,
-                            fontDiff: 10,
-                            colAlignment: CrossAxisAlignment.center,
-                            vertical: true,
-                          ),
+                        NamingSegment(
+                          owner: widget.profile,
+                          size: 30,
+                          fontDiff: 10,
+                          colAlignment: CrossAxisAlignment.center,
+                          vertical: true,
                         ),
                         const SizedBox(height: 50),
-                        Obx(
-                          () => Text(
-                            sc.bio.value,
-                            textAlign: TextAlign.center,
-                          ),
+                        Text(
+                          widget.profile.bio,
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
