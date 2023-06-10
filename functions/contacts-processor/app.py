@@ -81,10 +81,12 @@ def main(req, res):
                     # No changes necessary
                     contacts.append(rawC)
 
-            # Update contacts
-            database.update_document(
-                    database_id=payload['$databaseId'], collection_id=secretsCol, 
-                    document_id=payload["$id"], data={'contacts': contacts})
+            # Condition to stop infinity recurrence
+            if state == 'Updated':
+                # Update contacts
+                database.update_document(
+                        database_id=payload['$databaseId'], collection_id=secretsCol, 
+                        document_id=payload["$id"], data={'contacts': contacts})
 
             # Report on execution status
             return res.json({
