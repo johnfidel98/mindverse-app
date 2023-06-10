@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
+import 'package:mindverse/components/verification.dart';
 import 'package:mindverse/constants.dart';
 import 'package:mindverse/controllers/chat.dart';
 import 'package:mindverse/controllers/session.dart';
@@ -78,83 +79,90 @@ class _HomePageState extends State<HomePage> {
     return DefaultTabController(
       length: 3,
       initialIndex: 1,
-      child: Scaffold(
-        backgroundColor: Colors.grey[300],
-        appBar: AppBar(
-          title: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Text(
-              'MindVerse',
-              style: defaultTextStyle.copyWith(color: htSolid5, fontSize: 28),
+      child: Obx(
+        () => Scaffold(
+          backgroundColor: Colors.grey[300],
+          appBar: AppBar(
+            title: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                'MindVerse',
+                style: defaultTextStyle.copyWith(color: htSolid5, fontSize: 28),
+              ),
             ),
-          ),
-          actions: [
-            IconButton(
-                onPressed: () => Get.to(() => const NotificationsPage()),
-                icon: Stack(
-                  children: [
-                    Center(
-                      child: Obx(() => Icon(
-                            sc.notifications.isNotEmpty
-                                ? Icons.notifications
-                                : Icons.notifications_none,
-                            color: htSolid5,
-                          )),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Obx(
-                        () => NumberCircleCount(
-                          value: sc.notifications.length,
-                          fontSize: 10,
+            actions: [
+              IconButton(
+                  onPressed: () => Get.to(() => const NotificationsPage()),
+                  icon: Stack(
+                    children: [
+                      Center(
+                        child: Obx(() => Icon(
+                              sc.notifications.isNotEmpty
+                                  ? Icons.notifications
+                                  : Icons.notifications_none,
+                              color: htSolid5,
+                            )),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Obx(
+                          () => NumberCircleCount(
+                            value: sc.notifications.length,
+                            fontSize: 10,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                )),
-            Padding(
-              padding: const EdgeInsets.only(left: 8, right: 15.0),
-              child: AccountDropdownSegment(),
-            )
-          ],
-          backgroundColor: Colors.white,
-          titleSpacing: 3,
-        ),
-        body: const TabBarView(
-          children: [
-            ContactsTab(),
-            ConversationsTab(),
-            GroupsTab(),
-          ],
-        ),
-        bottomNavigationBar: Container(
-          color: Colors.white,
-          child: TabBar(
-            labelStyle: defaultTextStyle.copyWith(height: 1.3, fontSize: 15),
-            unselectedLabelStyle:
-                defaultTextStyle.copyWith(height: 1.3, fontSize: 14),
-            labelColor: htSolid5,
-            indicator: const BoxDecoration(
-              border: Border(
-                top: BorderSide(color: htSolid4, width: 2),
-              ),
-            ),
-            tabs: const [
-              Tab(
-                text: 'Contacts',
-                icon: Icon(Icons.contacts),
-              ),
-              Tab(
-                text: 'Home',
-                icon: Icon(Icons.home),
-              ),
-              Tab(
-                text: 'Groups',
-                icon: Icon(Icons.groups),
-              ),
+                    ],
+                  )),
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 15.0),
+                child: AccountDropdownSegment(),
+              )
             ],
+            backgroundColor: Colors.white,
+            titleSpacing: 3,
           ),
+          body: !sc.verified.value
+              ? const EmailVerificationSegment()
+              : const TabBarView(
+                  children: [
+                    ContactsTab(),
+                    ConversationsTab(),
+                    GroupsTab(),
+                  ],
+                ),
+          bottomNavigationBar: !sc.verified.value
+              ? const SizedBox()
+              : Container(
+                  color: Colors.white,
+                  child: TabBar(
+                    labelStyle:
+                        defaultTextStyle.copyWith(height: 1.3, fontSize: 15),
+                    unselectedLabelStyle:
+                        defaultTextStyle.copyWith(height: 1.3, fontSize: 14),
+                    labelColor: htSolid5,
+                    indicator: const BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: htSolid4, width: 2),
+                      ),
+                    ),
+                    tabs: const [
+                      Tab(
+                        text: 'Contacts',
+                        icon: Icon(Icons.contacts),
+                      ),
+                      Tab(
+                        text: 'Home',
+                        icon: Icon(Icons.home),
+                      ),
+                      Tab(
+                        text: 'Groups',
+                        icon: Icon(Icons.groups),
+                      ),
+                    ],
+                  ),
+                ),
         ),
       ),
     );
