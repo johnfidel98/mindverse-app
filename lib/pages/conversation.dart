@@ -47,7 +47,7 @@ class _ConversationPageState extends State<ConversationPage>
   late final RealtimeSubscription _newMessagesListener;
 
   Group groupData = Group(name: 'unknown', id: '#');
-  UserProfile profileData = UserProfile(username: 'unknown');
+  UserProfile profileData = UserProfile(username: unknownBastard);
   bool _reachedEnd = false;
   bool _loadedEntity = false;
   bool _isGroup = false;

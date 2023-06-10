@@ -153,7 +153,7 @@ class SessionController extends GetxController {
 
   Future<bool> checkOnline({required String uname}) async {
     // check if current user is online
-    if (username.value == uname || uname == 'unknown') {
+    if (username.value == uname) {
       return true;
     }
 

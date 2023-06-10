@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get/get.dart';
@@ -227,7 +225,8 @@ class ContactTile extends StatelessWidget {
             Row(
               children: [
                 AvatarSegment(
-                  userProfile: cnt.profile ?? UserProfile(username: 'unknown'),
+                  userProfile:
+                      cnt.profile ?? UserProfile(username: unknownBastard),
                   size: 60,
                   expanded: false,
                 ),

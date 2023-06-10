@@ -47,7 +47,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Column(
                       children: [
                         AvatarSegment(
-                          userProfile: UserProfile(username: 'unknown'),
+                          userProfile: UserProfile(username: unknownBastard),
                           expanded: false,
                           size: 160,
                         ),

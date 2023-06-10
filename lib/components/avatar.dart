@@ -76,11 +76,13 @@ class _AvatarSegmentState extends State<AvatarSegment> {
   void initState() {
     super.initState();
 
-    // do online checks
-    onlineStatus(null);
+    if (widget.userProfile.username != unknownBastard) {
+      // do online checks
+      onlineStatus(null);
 
-    // check online after period
-    _timerOnline = Timer.periodic(const Duration(seconds: 60), onlineStatus);
+      // check online after period
+      _timerOnline = Timer.periodic(const Duration(seconds: 60), onlineStatus);
+    }
   }
 
   void onlineStatus(_) async =>
@@ -244,9 +246,11 @@ class _AvatarSegmentState extends State<AvatarSegment> {
 
   @override
   void dispose() {
-    // dispose online timer
-    if (_timerOnline.isActive) {
-      _timerOnline.cancel();
+    if (widget.userProfile.username != unknownBastard) {
+      // dispose online timer
+      if (_timerOnline.isActive) {
+        _timerOnline.cancel();
+      }
     }
     super.dispose();
   }
