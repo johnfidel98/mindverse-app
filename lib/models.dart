@@ -1,5 +1,7 @@
 // Models File : All objects used in the app defined here
 
+import 'dart:convert';
+
 import 'package:appwrite/models.dart';
 
 class UserProfile {
@@ -233,4 +235,12 @@ class MVContact {
       email: json['e'],
     );
   }
+
+  toJson() =>
+      // transform to json
+      json.encode({
+        'e': email!,
+        'u': username!,
+        's': matched ? 1 : 0,
+      });
 }

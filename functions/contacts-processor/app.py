@@ -67,8 +67,8 @@ def main(req, res):
                             pass
 
                         # Get username in prefs
-                        newC['s'] = 1
                         newC['u'] = users_list['users'][0]['prefs']['username']
+                        newC['s'] = 1
                         
                         state = 'Updated'
                     except Exception:

@@ -176,15 +176,21 @@ class SessionController extends GetxController {
     });
   }
 
-  Future<List<Map>> getContacts({required String uname}) =>
+  Future<List<MVContact>> getContacts({required String uname}) =>
       getDoc(collectionName: "secrets", docId: uname).then((doc) async {
-        List<Map> processedContacts = [];
+        List<MVContact> processedContacts = [];
         for (String c in doc.data['contacts']) {
-          Map cData = json.decode(c);
+          MVContact cnt = MVContact.fromJson(json: json.decode(c));
 
-          if (!processedContactIds.contains(cData['e'])) {
-            MVContact cnt = MVContact.fromJson(json: cData);
+          // check if updated and unknown
+          for (MVContact uC in contactsUnknown) {
+            if (uC.email == cnt.email && cnt.username!.isNotEmpty) {
+              // remove from processed list
+              processedContactIds.remove(cnt.email);
+            }
+          }
 
+          if (!processedContactIds.contains(cnt.email)) {
             if (cnt.matched) {
               // resolve profile details
               cnt.profile = await getProfile(uname: cnt.username!);
@@ -197,10 +203,9 @@ class SessionController extends GetxController {
             }
 
             // set id to avoid future duplicates
-            processedContactIds.add(cData['e']);
+            processedContactIds.add(cnt.email);
           }
-
-          processedContacts.add(cData);
+          processedContacts.add(cnt);
         }
 
         return processedContacts;

@@ -91,18 +91,18 @@ class _ContactListingState extends State<ContactListing>
       // get current account contacts
       await sc.getContacts(uname: sc.username.value).then((aContacts) async {
         // sync contacts
-        for (Map cnt in aContacts) {
-          if (processedEmails.contains(cnt['e'])) {
+        for (MVContact cnt in aContacts) {
+          if (processedEmails.contains(cnt.email)) {
             // weed out existing in mContacts
-            mContacts.remove(cnt['e']);
+            mContacts.remove(cnt.email);
           }
         }
 
         // merge contacts
-        List<Map> allContacts = aContacts;
-
         for (String em in mContacts.keys) {
-          allContacts.add({"e": em, "u": "", "s": 0});
+          aContacts.add(MVContact.fromJson(
+            json: {"e": em, "u": "", "s": 0},
+          ));
         }
 
         if (mContacts.keys.isNotEmpty) {
@@ -110,9 +110,7 @@ class _ContactListingState extends State<ContactListing>
           await sc.updateDoc(
               collectionName: 'secrets',
               docId: sc.username.value,
-              data: {
-                "contacts": allContacts.map((map) => json.encode(map)).toList()
-              });
+              data: {"contacts": aContacts.map((cL) => cL.toJson()).toList()});
         }
 
         if (_isMounted) {
