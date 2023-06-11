@@ -111,20 +111,25 @@ class _ConversationPageState extends State<ConversationPage>
         // update states
         setState(() {
           groupData = g;
+          _loadedEntity = true;
           _isGroup = true;
         });
+
+        // complete loaded entity
+        completerEntityLoaded.complete();
+      });
+    } else {
+      // load profile details
+      await sc.getProfile(uname: widget.entityId!).then((UserProfile p) {
+        setState(() {
+          profileData = p;
+          _loadedEntity = true;
+        });
+
+        // complete loaded entity
+        completerEntityLoaded.complete();
       });
     }
-    // load profile details
-    await sc.getProfile(uname: widget.entityId!).then((UserProfile p) {
-      setState(() {
-        profileData = p;
-        _loadedEntity = true;
-      });
-
-      // complete loaded entity
-      completerEntityLoaded.complete();
-    });
   }
 
   void _scrollListener() {

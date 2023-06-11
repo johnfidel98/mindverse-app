@@ -10,6 +10,41 @@ from appwrite.id import ID
 from appwrite.services.databases import Databases
 
 
+def processUser(dUsername, database, payload, profilesCol, notificationsCol, dGroup=None):
+    # Single user processing... get profile
+    dProfile = database.get_document(
+        database_id=payload['$databaseId'], collection_id=profilesCol,
+        document_id=dUsername)
+
+    # Check if not online
+    if parse(dProfile['lastOnline']) < (datetime.utcnow() - timedelta(seconds=120)).replace(tzinfo=pytz.UTC):
+        # Create notification
+        if not dGroup:
+            database.create_document(
+                database_id=payload['$databaseId'], collection_id=notificationsCol,
+                document_id=ID.unique(),
+                data={
+                    'title': f'{dProfile["name"]} (@{payload["entitiesId"]}) sent message',
+                    'body': json.dumps({'msg': payload["text"], 'img': dProfile['avatar']}),
+                    'sourceId': payload['sourceId'],
+                    'destinationId': dUsername,
+                }
+            )
+        else:
+            database.create_document(
+                database_id=payload['$databaseId'], collection_id=notificationsCol,
+                document_id=ID.unique(),
+                data={
+                    'title': f'{dProfile["name"]} (@{dUsername}) posted in {dGroup["name"]}',
+                    'body': json.dumps({'msg': payload["text"], 'img': dGroup['logo']}),
+                    'sourceId': payload['sourceId'],
+                    'destinationId': dUsername,
+                }
+            )
+
+        print(f'[!] {dProfile["name"]} was offline... sent notification')
+
+
 def main(req, res):
     # Init client
     client = Client()
@@ -31,6 +66,8 @@ def main(req, res):
         rawPayload = req.variables.get('APPWRITE_FUNCTION_EVENT_DATA', None)
         notificationsCol = req.variables.get('NOTIFICATIONS_COL_ID', None)
         profilesCol = req.variables.get('PROFILES_COL_ID', None)
+        groupsCol = req.variables.get('GROUPS_COL_ID', None)
+        atlasCol = req.variables.get('ATLAS_COL_ID', None)
         if not rawPayload:
             print(f'[!] Dammn! Missing payload ...')
             return res.json({
@@ -38,7 +75,7 @@ def main(req, res):
                 'success': False,
                 'payload': rawPayload,
             })
-        for col, colName in [(notificationsCol, 'NOTIFICATIONS'), (profilesCol, 'PROFILES')]:
+        for col, colName in [(notificationsCol, 'NOTIFICATIONS'), (profilesCol, 'PROFILES'), (atlasCol, 'ATLAS'), (groupsCol, 'GROUPS')]:
             if not col:
                 print(
                     f'[!] Dammn! Missing parameters {colName}_COL_ID ...')
@@ -67,28 +104,41 @@ def main(req, res):
                 document_id=payload['$id'], data={'tags': tags}
             )
 
-            # Set notification task to be processed later
-            if not payload['toGroup']:
-                # Get profile
-                dProfile = database.get_document(
-                    database_id=payload['$databaseId'], collection_id=profilesCol,
+            if payload['toGroup']:
+                # Group processing... get group details
+                dGroup = database.get_document(
+                    database_id=payload['$databaseId'], collection_id=groupsCol,
                     document_id=payload['entitiesId'])
 
-                # Check if not online
-                if parse(dProfile['lastOnline']) < (datetime.utcnow() - timedelta(seconds=120)).replace(tzinfo=pytz.UTC):
-                    # Create notification
-                    database.create_document(
-                        database_id=payload['$databaseId'], collection_id=notificationsCol,
-                        document_id=ID.unique(),
-                        data={
-                            'title': f'{dProfile["name"]} (@{payload["entitiesId"]}) sent message',
-                            'body': json.dumps({'msg': payload["text"], 'img': dProfile['avatar']}),
-                            'sourceId': payload['sourceId'],
-                            'destinationId': payload['entitiesId'],
-                        }
-                    )
+                # Notify offline users
+                for gUser in dGroup['dstEntities']:
+                    processUser(gUser, database, payload, profilesCol, notificationsCol, dGroup)
 
-                    print(f'[!] User offline... sent notification')
+                # Atlas indexing for groups
+                for tag in tags:
+                    try:
+                        # Get current tag entry
+                        aTag = database.get_document(
+                            database_id=payload['$databaseId'], collection_id=atlasCol,
+                            document_id=tag)
+                        
+                        if payload['entitiesId'] not in aTag['entities']:
+                            newEntities = aTag['entities'] + [payload['entitiesId']]
+
+                            # Update tag
+                            database.update_document(
+                                database_id=payload['$databaseId'], collection_id=atlasCol,
+                                document_id=tag, data={'entities': newEntities}
+                            )
+                    except Exception:
+                        # Tag doesn't exist
+                        database.create_document(
+                            database_id=payload['$databaseId'], collection_id=atlasCol,
+                            document_id=tag,
+                            data={'entities': [payload['entitiesId']]}
+                        )
+            else:
+                processUser(payload['entitiesId'], database, payload, profilesCol, notificationsCol)
             return res.json({
                 "success": True,
                 "message": "Completed successfully",

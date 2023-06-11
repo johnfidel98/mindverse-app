@@ -1,4 +1,6 @@
 NOTIFICATIONS_COL_ID=<Notifications Collection ID>
 PROFILES_COL_ID=<Profiles Collection ID>
+GROUPS_COL_ID=<Groups Collection ID>
+ATLAS_COL_ID=<Atlas Collection ID>
 HT_FUNCTION_ENDPOINT=http://cloud.appwrite.com/v1
 HT_FUNCTION_API_KEY=<API Key>
