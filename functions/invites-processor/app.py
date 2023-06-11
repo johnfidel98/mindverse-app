@@ -14,20 +14,29 @@ def main(req, res):
             'payload': rawPayload,
         })
 
-    # Get processed payload
+    # Get processed payloa
     payload = json.loads(rawPayload)
 
     try:
         content = f'''
-Hey you ...\n
-\n
-\n{payload["client"]} invited you to to join us at MindVerse. You can download the app from the link below!
-\n
-\ntodo: https://huawei
-\n
-\n
-\nMindVerse Team
-\nThanks
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Hi,</h2>
+    
+    <p>I hope this email finds you well. {payload["client"]} invited you to to join us at MindVerse. You can download the app from the link below!</p>
+
+    <a href="">https://huawei</a>
+    
+    <p>If you have any questions or need further assistance, please feel free to reach out to me. I'll be happy to help!</p>
+    <p>Thanks and have a great day.</p>
+    
+    <p>Best regards,<br>
+    MindVerse Team</p>
+    
+    <hr>
+</body>
+</html>
         '''
 
         # Create message container
