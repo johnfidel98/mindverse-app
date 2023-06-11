@@ -182,6 +182,15 @@ class _ConversationPageState extends State<ConversationPage>
                 ? Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (groupData.isPrivate)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 4.0),
+                          child: Icon(
+                            Icons.lock,
+                            color: htSolid4,
+                            size: 16,
+                          ),
+                        ),
                       SizedBox(
                           width: MediaQuery.of(context).size.width - 200,
                           child: Text(
@@ -193,15 +202,6 @@ class _ConversationPageState extends State<ConversationPage>
                               color: htSolid4,
                             ),
                           )),
-                      if (groupData.isPrivate)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 4.0),
-                          child: Icon(
-                            Icons.lock,
-                            color: htSolid4,
-                            size: 16,
-                          ),
-                        ),
                     ],
                   )
                 : NamingSegment(
