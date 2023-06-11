@@ -167,7 +167,7 @@ class ConversationTile extends StatelessWidget {
                           ),
                         cnv.lastMessage != null
                             ? SizedBox(
-                                width: MediaQuery.of(context).size.width - 140,
+                                width: MediaQuery.of(context).size.width - 120,
                                 child: Text(
                                   cnv.lastMessage!,
                                   overflow: TextOverflow.ellipsis,

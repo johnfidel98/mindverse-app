@@ -291,9 +291,13 @@ class GroupTile extends StatelessWidget {
                             if (grp.lastProfile != null)
                               const SizedBox(width: 5),
                             grp.lastProfile != null
-                                ? Text(
-                                    grp.lastMessage,
-                                    style: TextStyle(
+                                ? SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width - 150,
+                                    child: Text(
+                                      grp.lastMessage,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
                                         fontStyle: grp.lastProfile != null
                                             ? null
                                             : FontStyle.italic,
@@ -303,16 +307,21 @@ class GroupTile extends StatelessWidget {
                                             : htSolid2,
                                         height: grp.lastProfile != null
                                             ? null
-                                            : 1.5),
-                                  )
-                                : Text(
-                                    grp.name,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      color: htSolid4,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                            : 1.5,
+                                      ),
+                                    ))
+                                : SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width - 140,
+                                    child: Text(
+                                      grp.name,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        color: htSolid4,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )),
                           ],
                         ),
                         grp.lastPosted != null
@@ -324,15 +333,18 @@ class GroupTile extends StatelessWidget {
                                   color: htSolid2,
                                 ),
                               )
-                            : Text(
-                                grp.lastMessage,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  height: 1.4,
-                                  color: htSolid2,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              )
+                            : SizedBox(
+                                width: MediaQuery.of(context).size.width - 150,
+                                child: Text(
+                                  grp.lastMessage,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    height: 1.4,
+                                    color: htSolid2,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ))
                       ],
                     ),
                   )

@@ -240,6 +240,7 @@ class NamingSegment extends StatelessWidget {
     this.vertical = false,
     this.height = 1.5,
     this.fontDiff = 5,
+    this.maxWidth,
     this.rowAlignment = MainAxisAlignment.center,
     this.colAlignment = CrossAxisAlignment.start,
     this.usernameColor = Colors.black54,
@@ -253,6 +254,7 @@ class NamingSegment extends StatelessWidget {
   final Color usernameColor;
   final MainAxisAlignment rowAlignment;
   final CrossAxisAlignment colAlignment;
+  final double? maxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -260,26 +262,28 @@ class NamingSegment extends StatelessWidget {
         ? Column(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: colAlignment,
-            children: namingWidgets.reversed.toList(),
+            children: namingWidgets(context).reversed.toList(),
           )
         : Row(
             mainAxisAlignment: rowAlignment,
-            children: namingWidgets,
+            children: namingWidgets(context),
           );
   }
 
-  List<Widget> get namingWidgets {
+  List<Widget> namingWidgets(BuildContext ctx) {
     return [
-      Text(
-        owner.name, // todo: text width h rt r h tbhebrb erbbw',
-        style: defaultTextStyle.copyWith(
-          fontSize: size,
-          color: htSolid4,
-          height: height,
-          fontWeight: FontWeight.bold,
-        ),
-        overflow: TextOverflow.ellipsis,
-      ),
+      SizedBox(
+          width: maxWidth != null ? maxWidth! : null,
+          child: Text(
+            owner.name,
+            style: defaultTextStyle.copyWith(
+              fontSize: size,
+              color: htSolid4,
+              height: height,
+              fontWeight: FontWeight.bold,
+            ),
+            overflow: TextOverflow.ellipsis,
+          )),
       const SizedBox(width: 5),
       Text(
         '@${owner.username}',

@@ -182,14 +182,17 @@ class _ConversationPageState extends State<ConversationPage>
                 ? Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        groupData.name,
-                        style: defaultTextStyle.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: htSolid4,
-                        ),
-                      ),
+                      SizedBox(
+                          width: MediaQuery.of(context).size.width - 200,
+                          child: Text(
+                            groupData.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: defaultTextStyle.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: htSolid4,
+                            ),
+                          )),
                       if (groupData.isPrivate)
                         const Padding(
                           padding: EdgeInsets.only(left: 4.0),
@@ -204,8 +207,11 @@ class _ConversationPageState extends State<ConversationPage>
                 : NamingSegment(
                     owner: profileData,
                     size: 20,
+                    fontDiff: 6,
                     rowAlignment: MainAxisAlignment.start,
-                    height: 1.8,
+                    height: 1.2,
+                    maxWidth: MediaQuery.of(context).size.width - 200,
+                    vertical: true,
                   )
             : Text(
                 'Loading ...',
