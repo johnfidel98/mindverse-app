@@ -8,7 +8,7 @@ environment:
 
 flutter_native_splash:
   color: "#ececec"
-  image: assets/images/logo.png
+  image: mindVerse.png
   android_gravity: top
 
 dependencies:
