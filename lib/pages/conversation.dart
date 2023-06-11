@@ -95,15 +95,7 @@ class _ConversationPageState extends State<ConversationPage>
           UserProfile owner = await sc.getProfile(uname: msg['sourceId']);
 
           // load message
-          cc.addMessage(Message(
-            id: msg['\$id'],
-            profile: owner,
-            text: msg['text'],
-            created: DateTime.parse(msg['\$createdAt']),
-            seen: msg['isRead'].contains(sc.username.value),
-            video: msg['video'] ?? '',
-            link: msg['link'] ?? '',
-          ));
+          cc.addMessage(Message.fromJson(json: msg, profile: owner));
         }
       }
     });
@@ -111,33 +103,28 @@ class _ConversationPageState extends State<ConversationPage>
     WidgetsBinding.instance.addPostFrameCallback((_) => postInit());
   }
 
-  void postInit() {
+  void postInit() async {
     // load entity details
     if (widget.isGrp) {
       // load group details
-      sc.getGroup(groupId: widget.entityId!).then((Group g) {
+      await sc.getGroup(groupId: widget.entityId!).then((Group g) {
         // update states
         setState(() {
           groupData = g;
-          _loadedEntity = true;
           _isGroup = true;
         });
-
-        // complete loaded entity
-        completerEntityLoaded.complete();
-      });
-    } else {
-      // load profile details
-      sc.getProfile(uname: widget.entityId!).then((UserProfile p) {
-        setState(() {
-          profileData = p;
-          _loadedEntity = true;
-        });
-
-        // complete loaded entity
-        completerEntityLoaded.complete();
       });
     }
+    // load profile details
+    await sc.getProfile(uname: widget.entityId!).then((UserProfile p) {
+      setState(() {
+        profileData = p;
+        _loadedEntity = true;
+      });
+
+      // complete loaded entity
+      completerEntityLoaded.complete();
+    });
   }
 
   void _scrollListener() {
@@ -297,7 +284,10 @@ class _ConversationPageState extends State<ConversationPage>
               ),
             ),
           ),
-          const ChatInputBar(),
+          ChatInputBar(
+            isGroup: _isGroup,
+            entitiesId: widget.entityId!,
+          ),
         ],
       ),
     );

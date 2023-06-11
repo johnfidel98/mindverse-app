@@ -29,19 +29,6 @@ class ChatController extends GetxController {
 
   addMessage(Message msg) => messages.insert(0, msg);
 
-  Future<Message> getMessage(
-          {required SessionController ses, required String mid}) async =>
-      await ses
-          .getDoc(collectionName: 'messages', docId: mid)
-          .then((mDoc) async {
-        // resolve profile
-        UserProfile mProfile =
-            await ses.getProfile(uname: mDoc.data['sourceId']);
-
-        // return message
-        return Message.fromDoc(doc: mDoc, profile: mProfile);
-      });
-
   markAllRead({required SessionController ses}) async {
     List<String> processed = [];
     for (Message msg in messages) {
@@ -78,6 +65,19 @@ class ChatController extends GetxController {
       }
     }
   }
+
+  Future<Message> getMessage(
+          {required SessionController ses, required String mid}) async =>
+      await ses
+          .getDoc(collectionName: 'messages', docId: mid)
+          .then((mDoc) async {
+        // resolve profile
+        UserProfile mProfile =
+            await ses.getProfile(uname: mDoc.data['sourceId']);
+
+        // return message
+        return Message.fromDoc(doc: mDoc, profile: mProfile);
+      });
 
   Future getGroups({required SessionController sc}) async {
     // set loading
@@ -234,6 +234,10 @@ class ChatController extends GetxController {
         Query.orderDesc('\$createdAt'),
         Query.limit(11),
       ]).then((docs) => docs.documents.isNotEmpty ? docs.documents : []);
+
+  Future postMessage(
+          {required SessionController ses, required Map data}) async =>
+      await ses.createDoc(collectionName: 'messages', data: data);
 
   Future getMessages(
       {required SessionController ses,

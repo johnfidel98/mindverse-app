@@ -23,8 +23,6 @@
         "link": "url",
         "images[100]": "array",
         "tags[20]": "array",
-        "lat": "double",
-        "lng": "double",
         "isPrivate(default=false)": "bool",
         "isRead[36]": "array",
         "entitiesId[36]": "str",

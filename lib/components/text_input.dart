@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mindverse/constants.dart';
+import 'package:mindverse/controllers/chat.dart';
+import 'package:mindverse/controllers/session.dart';
+import 'package:mindverse/models.dart';
 import 'package:mindverse/utils.dart';
 
 class MVTextInput extends StatefulWidget {
@@ -145,17 +150,29 @@ class _MVTextInputState extends State<MVTextInput> {
 }
 
 class ChatInputBar extends StatefulWidget {
-  const ChatInputBar({super.key, this.onSend, this.onAttached});
+  const ChatInputBar({
+    super.key,
+    required this.isGroup,
+    required this.entitiesId,
+  });
 
-  final Function()? onSend;
-  final Function()? onAttached;
+  final bool isGroup;
+  final String entitiesId;
 
   @override
   State<ChatInputBar> createState() => _ChatInputBarState();
 }
 
-class _ChatInputBarState extends State<ChatInputBar> {
+class _ChatInputBarState extends State<ChatInputBar>
+    with WidgetsBindingObserver {
+  final SessionController sc = Get.find<SessionController>();
+  final ChatController cc = Get.find<ChatController>();
+
   final TextEditingController ec = TextEditingController();
+
+  String text = '';
+  bool isPosting = false;
+  UserProfile profile = UserProfile(username: unknownBastard);
 
   @override
   void initState() {
@@ -163,9 +180,56 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
     // listen to input events
     ec.addListener(handleInput);
+
+    // add observer
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => postInit());
   }
 
-  void handleInput() {}
+  void postInit() async {
+    // load my profile
+    UserProfile myProfile = await sc.getProfile(uname: sc.username.value);
+
+    setState(() {
+      profile = myProfile;
+    });
+  }
+
+  void handleInput() => setState(() => text = ec.text);
+
+  void onSend() async {
+    // check if message is not empty
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Kindly type something... down here!")),
+      );
+      return;
+    }
+    // mark posting
+    setState(() {
+      isPosting = true;
+    });
+
+    // post message
+    await cc.postMessage(ses: sc, data: {
+      'text': text,
+      'sourceId': sc.username.value,
+      'entitiesId': widget.entitiesId,
+      'toGroup': widget.isGroup,
+    }).then((mDoc) {
+      // add message to messages
+      cc.addMessage(Message.fromDoc(doc: mDoc, profile: profile));
+
+      // clean message
+      ec.text = '';
+
+      setState(() {
+        isPosting = false;
+      });
+    });
+  }
+
+  void onAttached() {}
 
   @override
   Widget build(BuildContext context) {
@@ -184,24 +248,27 @@ class _ChatInputBarState extends State<ChatInputBar> {
           textAlign: TextAlign.start,
           decoration: InputDecoration(
             labelStyle: const TextStyle(height: 1.5),
-            //floatingLabelStyle: const TextStyle(color: Colors.black87),
             errorStyle: const TextStyle(fontSize: 18.0, height: 1.5),
             hintText: 'I heard a roumor! 🤫',
             hintStyle: GoogleFonts.overpass(
                 textStyle: const TextStyle(fontSize: 18, height: 1.7)),
             prefixIcon: Material(
               child: IconButton(
-                onPressed: widget.onAttached,
-                icon: const Icon(
-                  Icons.expand_less,
-                ),
+                onPressed: onAttached,
+                icon: Transform.rotate(
+                    angle: 40 * math.pi / 180,
+                    child: const Icon(
+                      Icons.attach_file,
+                      color: htSolid5,
+                    )),
               ),
             ),
             suffixIcon: Material(
               child: IconButton(
-                onPressed: widget.onSend,
+                onPressed: onSend,
                 icon: const Icon(
                   Icons.send_rounded,
+                  color: htSolid5,
                 ),
               ),
             ),
