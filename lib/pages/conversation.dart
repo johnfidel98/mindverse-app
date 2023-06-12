@@ -189,7 +189,7 @@ class _ConversationPageState extends State<ConversationPage>
         title: _loadedEntity
             ? widget.isGrp
                 ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       if (groupData.isPrivate)
                         const Padding(
@@ -197,7 +197,7 @@ class _ConversationPageState extends State<ConversationPage>
                           child: Icon(
                             Icons.lock,
                             color: htSolid4,
-                            size: 16,
+                            size: 18,
                           ),
                         ),
                       SizedBox(
@@ -206,10 +206,10 @@ class _ConversationPageState extends State<ConversationPage>
                             groupData.name,
                             overflow: TextOverflow.ellipsis,
                             style: defaultTextStyle.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: htSolid4,
-                            ),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: htSolid4,
+                                height: 2.0),
                           )),
                     ],
                   )
