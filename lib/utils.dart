@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
@@ -385,6 +386,69 @@ class LeadingLogo extends StatelessWidget {
         bottom: 12.0,
       ),
       child: Image.asset('assets/images/logo.png', height: 10),
+    );
+  }
+}
+
+class ImagePath extends StatefulWidget {
+  const ImagePath({
+    super.key,
+    required this.bucket,
+    required this.imageId,
+    this.size = 60,
+  });
+
+  final String bucket;
+  final String imageId;
+  final double size;
+
+  @override
+  State<ImagePath> createState() => _ImagePathState();
+}
+
+class _ImagePathState extends State<ImagePath> {
+  final SessionController sc = Get.find<SessionController>();
+
+  late Storage _storage;
+  late Map _storages;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // get storage
+    _storage = sc.getStorage();
+    _storages = sc.getStorages();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _storage.getFileView(
+        bucketId: _storages[widget.bucket],
+        fileId: widget.imageId,
+      ),
+      builder: (context, snapshot) {
+        return snapshot.hasData && snapshot.data != null
+            ? Container(
+                clipBehavior: Clip.antiAlias,
+                height: widget.size,
+                width: widget.size,
+                decoration: const BoxDecoration(
+                    color: htSolid2, shape: BoxShape.circle),
+                child: Image.memory(
+                  snapshot.data!,
+                  height: widget.size,
+                  fit: BoxFit.cover,
+                ))
+            : SizedBox(
+                height: widget.size,
+                width: widget.size,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+      },
     );
   }
 }

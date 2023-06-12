@@ -2,7 +2,7 @@
     "profiles(permissions=***-)": {
         "_id[36]": "str<username>",
         "name[30]": "str",
-        "avatar[10]": "str",
+        "avatar[36]": "str",
         "bio[500]": "str",
         "*userId[36]": "str",
         "lastOnline": "datetime"
@@ -28,7 +28,7 @@
         "entitiesId[36]": "str",
         "toGroup(default=false)": "bool"
     },
-    "atlas(permissions=***-)": {
+    "atlas(permissions=-*--)": {
         "tag[20]": "str",
         "entities[50]": "array"
     },

@@ -47,7 +47,7 @@ void main() {
       }
     });
 
-    // path = '/welcome';
+    // path = '/roam';
     // FlutterNativeSplash.remove();
 
     // load app

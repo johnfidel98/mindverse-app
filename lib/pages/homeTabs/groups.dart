@@ -4,6 +4,7 @@ import 'package:mindverse/components/text.dart';
 import 'package:mindverse/pages/profile.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:appwrite/models.dart' as aw;
+import 'package:image_picker/image_picker.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:mindverse/components/ad.dart';
 import 'package:mindverse/controllers/chat.dart';
@@ -256,7 +257,18 @@ class GroupTile extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.group, size: 60),
+                  grp.logo != null
+                      ? ImagePath(
+                          bucket: 'group_logos',
+                          imageId: grp.logo!,
+                        )
+                      : Container(
+                          height: 60,
+                          width: 60,
+                          decoration: const BoxDecoration(
+                              color: htSolid1, shape: BoxShape.circle),
+                          child: const Icon(Icons.group,
+                              size: 40, color: htSolid5)),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Column(
@@ -378,7 +390,9 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
 
   bool loadingGroup = true;
   bool loadingSearch = false;
+  bool uploadingLogo = false;
   String mode = 'members';
+  String? logoId;
   List<UserProfile> members = [];
   List<UserProfile> matches = [];
 
@@ -393,6 +407,50 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => loadMembers());
+  }
+
+  _selectLogo(BuildContext ctx) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? i = await picker.pickImage(source: ImageSource.gallery);
+
+    if (i != null) {
+      setState(() {
+        uploadingLogo = true;
+      });
+
+      // upload group logo
+      await sc.uploadFile(
+          bucket: 'group_logos',
+          f: {'name': i.name, 'path': i.path}).then((aw.File file) async {
+        // update details in db
+        await sc.updateDoc(
+            collectionName: 'groups',
+            docId: widget.grp.id,
+            data: {'logo': file.$id});
+
+        // update state
+        setState(() {
+          uploadingLogo = false;
+          logoId = file.$id;
+        });
+
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          const SnackBar(
+              content: Text(
+            "Logo successfully uploaded!",
+            textAlign: TextAlign.center,
+          )),
+        );
+      });
+    } else {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+            content: Text(
+          "No image was selected!",
+          textAlign: TextAlign.center,
+        )),
+      );
+    }
   }
 
   void nameSearch() async {
@@ -423,6 +481,11 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
   }
 
   void loadMembers() async {
+    // set group logo
+    setState(() {
+      logoId = widget.grp.logo;
+    });
+
     // get group member profiles
     List<UserProfile> tMembers = [];
     for (String m in widget.grp.members!) {
@@ -508,12 +571,40 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
           const SlideIndicator(height: 2),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: GestureDetector(
+                      onTap: () => _selectLogo(context),
+                      child: Stack(
+                        alignment: AlignmentDirectional.center,
+                        children: [
+                          logoId != null
+                              ? ImagePath(
+                                  bucket: 'group_logos',
+                                  imageId: logoId!,
+                                  size: 100)
+                              : Container(
+                                  height: 100,
+                                  width: 100,
+                                  decoration: const BoxDecoration(
+                                      color: htSolid2, shape: BoxShape.circle),
+                                  child: const Icon(Icons.group,
+                                      size: 70, color: htSolid5),
+                                ),
+                          Container(
+                              height: 100,
+                              width: 100,
+                              decoration: const BoxDecoration(
+                                  color: htTrans3, shape: BoxShape.circle),
+                              child: const Icon(Icons.edit,
+                                  size: 50, color: htSolid5))
+                        ],
+                      )),
+                ),
+                Padding(
                   padding: const EdgeInsets.only(top: 10.0, bottom: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
                     children: [
                       Text(
                           widget.grp.admin == sc.username.value
@@ -521,18 +612,22 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
                               : 'View Members',
                           style: defaultTextStyle.copyWith(fontSize: 25)),
                       if (widget.grp.admin == sc.username.value)
-                        IconButton(
-                            onPressed: () => showAlertDialog(
-                                  context: context,
-                                  title: 'Confirm Group Deletion',
-                                  msg:
-                                      'Are you sure you want to delete the group "${widget.grp.name}"?',
-                                  onOk: () => removeGroup(),
-                                ),
-                            icon: const Icon(
-                              Icons.delete,
-                              color: htSolid5,
-                            ))
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            InterfaceButton(
+                              label: 'Delete Group',
+                              onPressed: () => showAlertDialog(
+                                context: context,
+                                title: 'Confirm Group Deletion',
+                                msg:
+                                    'Are you sure you want to delete the group "${widget.grp.name}"?',
+                                onOk: () => removeGroup(),
+                              ),
+                              icon: Icons.delete,
+                            ),
+                          ],
+                        )
                     ],
                   ),
                 ),
@@ -544,7 +639,6 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
                       )
                     : SingleChildScrollView(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (widget.grp.admin == sc.username.value)
                               MVTextInput(
@@ -633,7 +727,6 @@ class GroupList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GroupTitle(title: title),
         ListView.builder(

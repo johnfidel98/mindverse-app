@@ -34,6 +34,7 @@ class SessionController extends GetxController {
   late final Functions _function;
   late final Databases _database;
   late final Realtime _realtime;
+  late final Storage _storage;
 
   late final AppWriteDetails _appDetails;
 
@@ -68,6 +69,7 @@ class SessionController extends GetxController {
     _database = Databases(_client);
     _realtime = Realtime(_client);
     _function = Functions(_client);
+    _storage = Storage(_client);
     return _account;
   }
 
@@ -141,6 +143,16 @@ class SessionController extends GetxController {
           {required String groupId, required Map newDetails}) async =>
       await updateDoc(
           collectionName: "groups", docId: groupId, data: newDetails);
+
+  Future<aw.File> uploadFile({required String bucket, required Map f}) async =>
+      await _storage.createFile(
+        bucketId: storages[bucket],
+        fileId: ID.unique(),
+        file: InputFile(
+          path: f['path'],
+          filename: f['name'],
+        ),
+      );
 
   Future<Group> getGroup(
       {required String groupId, bool newDetails = false}) async {
@@ -344,7 +356,11 @@ class SessionController extends GetxController {
 
   getRealtime() => _realtime;
 
+  getStorage() => _storage;
+
   getAppDetails() => _appDetails;
 
   getCollections() => collections;
+
+  getStorages() => storages;
 }

@@ -4,8 +4,18 @@ import 'package:lottie/lottie.dart';
 import 'package:mindverse/constants.dart';
 import 'package:mindverse/utils.dart';
 
-class RoamPage extends StatelessWidget {
+class RoamPage extends StatefulWidget {
   const RoamPage({Key? key}) : super(key: key);
+
+  @override
+  State<RoamPage> createState() => _RoamPageState();
+}
+
+class _RoamPageState extends State<RoamPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
