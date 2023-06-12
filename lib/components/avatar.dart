@@ -69,10 +69,13 @@ class AvatarSegment extends StatefulWidget {
   State<AvatarSegment> createState() => _AvatarSegmentState();
 }
 
-class _AvatarSegmentState extends State<AvatarSegment> {
+class _AvatarSegmentState extends State<AvatarSegment>
+    with WidgetsBindingObserver {
   final SessionController sc = Get.find<SessionController>();
   late Timer _timerOnline;
+  UserProfile profile = UserProfile(username: unknownBastard);
   bool online = false;
+  bool loadingProfile = true;
 
   @override
   void initState() {
@@ -85,6 +88,20 @@ class _AvatarSegmentState extends State<AvatarSegment> {
       // check online after period
       _timerOnline = Timer.periodic(const Duration(seconds: 60), onlineStatus);
     }
+
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => postInit());
+  }
+
+  void postInit() async {
+    // update profile
+    UserProfile p = await sc.getProfile(
+      uname: widget.userProfile.username,
+    );
+    setState(() {
+      profile = p;
+      loadingProfile = false;
+    });
   }
 
   void onlineStatus(_) async =>
@@ -126,12 +143,27 @@ class _AvatarSegmentState extends State<AvatarSegment> {
               ),
             ),
             clipBehavior: Clip.antiAliasWithSaveLayer,
-            child: Obx(() => Stack(
-                  children: [
-                    sc.image.value.isNotEmpty
+            child: Stack(
+              children: [
+                loadingProfile
+                    ? SizedBox(
+                        height: widget.size,
+                        width: widget.size,
+                        child: Center(
+                          child: SizedBox(
+                            height: widget.size / 3,
+                            width: widget.size / 3,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: htSolid5,
+                            ),
+                          ),
+                        ),
+                      )
+                    : profile.avatar.isNotEmpty
                         ? ImagePath(
                             bucket: 'profile_avatars',
-                            imageId: sc.image.value,
+                            imageId: profile.avatar,
                             size: widget.size,
                             isCircular: widget.isCircular,
                           )
@@ -141,33 +173,33 @@ class _AvatarSegmentState extends State<AvatarSegment> {
                             width: widget.size,
                             fit: BoxFit.contain,
                           ),
-                    if (online)
-                      Positioned(
-                          bottom: 4,
-                          left: 4,
-                          child: widget.isCircular
-                              ? Container(
-                                  decoration: const BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)),
-                                    color: htSolid4,
-                                  ),
-                                  height: widget.size / 4,
-                                  width: widget.size / 4,
-                                )
-                              : OnlineIndicator(size: widget.size / 4)),
-                    Positioned(
-                      child: widget.overlayIcon != null
+                if (online)
+                  Positioned(
+                      bottom: 4,
+                      left: 4,
+                      child: widget.isCircular
                           ? Container(
-                              width: widget.size,
-                              height: widget.size,
-                              color: Colors.black26,
-                              child: widget.overlayIcon,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                color: htSolid4,
+                              ),
+                              height: widget.size / 4,
+                              width: widget.size / 4,
                             )
-                          : const SizedBox(),
-                    ),
-                  ],
-                )),
+                          : OnlineIndicator(size: widget.size / 4)),
+                Positioned(
+                  child: widget.overlayIcon != null
+                      ? Container(
+                          width: widget.size,
+                          height: widget.size,
+                          color: Colors.black26,
+                          child: widget.overlayIcon,
+                        )
+                      : const SizedBox(),
+                ),
+              ],
+            ),
           ),
           widget.expanded
               ? Padding(

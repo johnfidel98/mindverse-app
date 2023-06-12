@@ -139,17 +139,7 @@ class _ContactListingState extends State<ContactListing>
                       onPressed: processContacts,
                       bgColor: syncingContacts ? htSolid2 : null,
                       iconWidget: syncingContacts
-                          ? Container(
-                              width: 19,
-                              height: 15,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 2,
-                              ),
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 3,
-                                color: htSolid1,
-                              ),
-                            )
+                          ? const TinyProgressIndicator()
                           : null),
             ),
             ListView.builder(
@@ -203,13 +193,23 @@ class _ContactTileState extends State<ContactTile> {
   final ChatController cc = Get.find<ChatController>();
 
   bool sentInvite = false;
+  bool startingConv = false;
 
   void startConversation() async {
+    setState(() {
+      startingConv = true;
+    });
+
     // check if conversation exists
     if (!cc.processedConversationsIds.contains(widget.cnt.username!)) {
       // create conversation
       await sc.startConversation(uname: widget.cnt.username!);
     }
+
+    setState(() {
+      startingConv = false;
+    });
+
     // navigate to conversation
     Get.to(() => ConversationPage(entityId: widget.cnt.username, isGrp: false));
   }
@@ -263,9 +263,11 @@ class _ContactTileState extends State<ContactTile> {
             widget.cnt.profile != null
                 ? widget.cnt.profile!.username != sc.username.value
                     ? InterfaceButton(
+                        iconWidget:
+                            startingConv ? const TinyProgressIndicator() : null,
                         onPressed: startConversation,
                         label: 'Chat',
-                        icon: Icons.chat_bubble,
+                        icon: startingConv ? null : Icons.chat_bubble,
                         alt: true)
                     : const SizedBox()
                 : widget.cnt.email != null

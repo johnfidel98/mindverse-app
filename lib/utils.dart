@@ -458,6 +458,27 @@ class _ImagePathState extends State<ImagePath> {
   }
 }
 
+class TinyProgressIndicator extends StatelessWidget {
+  const TinyProgressIndicator({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 19,
+      height: 15,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 2,
+      ),
+      child: const CircularProgressIndicator(
+        strokeWidth: 3,
+        color: htSolid1,
+      ),
+    );
+  }
+}
+
 class AccountDropdownSegment extends StatelessWidget {
   AccountDropdownSegment({super.key});
 
