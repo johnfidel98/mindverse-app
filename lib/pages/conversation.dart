@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:appwrite/models.dart' as aw;
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:mindverse/components/ad.dart';
 import 'package:mindverse/components/images.dart';
 import 'package:mindverse/components/text.dart';
@@ -14,8 +17,7 @@ import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
 import 'package:mindverse/pages/homeTabs/groups.dart';
 import 'package:mindverse/utils.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:timeago/timeago.dart' as timeago;
+
 import 'package:uuid/uuid.dart';
 
 import 'dart:math' as math;
@@ -284,7 +286,7 @@ class _ConversationPageState extends State<ConversationPage>
                                         elevation: 2,
                                         child: ConversationComponent(
                                           messageData: messageData,
-                                          session: sc,
+                                          grp: groupData,
                                         ),
                                       ),
                                     ),
@@ -305,7 +307,6 @@ class _ConversationPageState extends State<ConversationPage>
                   SlidingUpPanel(
                     maxHeight: MediaQuery.of(context).size.height / 1.3,
                     minHeight: 15,
-                    //slideDirection: SlideDirection.DOWN,
                     controller: _controllerSlidePanel,
                     panel: GroupManage(
                       grp: groupData,
@@ -325,27 +326,95 @@ class _ConversationPageState extends State<ConversationPage>
   }
 }
 
-class ConversationComponent extends StatelessWidget {
+class ConversationComponent extends StatefulWidget {
   final Message messageData;
-  final SessionController session;
+  final Group grp;
 
   const ConversationComponent({
     super.key,
     required this.messageData,
-    required this.session,
+    required this.grp,
   });
 
   @override
+  State<ConversationComponent> createState() => _ConversationComponentState();
+}
+
+class _ConversationComponentState extends State<ConversationComponent>
+    with WidgetsBindingObserver {
+  final SessionController sc = Get.find<SessionController>();
+
+  late Timer _timerMessageState;
+
+  bool seen = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // monitor current user message state
+    _timerMessageState = Timer.periodic(
+        const Duration(seconds: 8),
+        widget.messageData.profile.username == sc.username.value
+            ? checkState
+            : (_) =>
+                // cancel timer
+                _timerMessageState.cancel());
+
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => postInit());
+  }
+
+  void postInit() {
+    // check if already seen
+    if (widget.grp.members!.length - 1 == widget.messageData.readers.length) {
+      setState(() {
+        seen = true;
+      });
+    }
+  }
+
+  void checkState(_) => seen
+      ? _timerMessageState.cancel()
+      : sc
+          .getDoc(collectionName: 'messages', docId: widget.messageData.id)
+          .then((aw.Document doc) {
+          // check if seen by others
+          if (doc.data['toGroup']) {
+            // use minus 1 as msg owner doesn't mark read
+            if (widget.grp.members!.length - 1 == doc.data['isRead'].length) {
+              // mark read
+              setState(() {
+                seen = true;
+              });
+
+              // cancel timer
+              _timerMessageState.cancel();
+            }
+          } else {
+            if (doc.data['isRead'].length > 0) {
+              // mark read
+              setState(() {
+                seen = true;
+              });
+
+              // cancel timer
+              _timerMessageState.cancel();
+            }
+          }
+        });
+
+  @override
   Widget build(BuildContext context) {
-    var msgUser = messageData.profile.username;
-    var currentUser = session.username.value;
+    var msgUser = widget.messageData.profile.username;
+    var currentUser = sc.username.value;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          messageData.reply != null
+          widget.messageData.reply != null
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -361,20 +430,20 @@ class ConversationComponent extends StatelessWidget {
                               child: const Icon(Icons.reply, size: 14)),
                         ),
                         Text(
-                          messageData.profile.name,
+                          widget.messageData.profile.name,
                           style: const TextStyle(
                               fontSize: 14, color: Colors.black54),
                         ),
                         const SizedBox(width: 5),
                         Text(
-                          "@${messageData.profile.username}",
+                          "@${widget.messageData.profile.username}",
                           style: const TextStyle(
                               fontSize: 12, color: Colors.black54),
                         ),
                       ],
                     ),
                     Text(
-                      messageData.text,
+                      widget.messageData.text,
                       style: const TextStyle(fontSize: 18, height: 1.3),
                     ),
                     Padding(
@@ -385,8 +454,8 @@ class ConversationComponent extends StatelessWidget {
                             ? Colors.grey[100]
                             : htSolid1,
                         child: ConversationComponent(
-                          messageData: messageData.reply!,
-                          session: session,
+                          grp: widget.grp,
+                          messageData: widget.messageData.reply!,
                         ),
                       ),
                     ),
@@ -396,57 +465,67 @@ class ConversationComponent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      messageData.profile.name,
+                      widget.messageData.profile.name,
                       style:
                           const TextStyle(fontSize: 14, color: Colors.black54),
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      "@${messageData.profile.username}",
+                      "@${widget.messageData.profile.username}",
                       style:
                           const TextStyle(fontSize: 12, color: Colors.black54),
                     ),
                   ],
                 ),
-          if (messageData.reply == null)
+          if (widget.messageData.reply == null)
             Padding(
               padding: EdgeInsets.only(
-                  bottom: messageData.reply == null ? 2.0 : 8.0),
+                  bottom: widget.messageData.reply == null ? 2.0 : 8.0),
               child: Text(
-                messageData.text,
+                widget.messageData.text,
                 style: const TextStyle(fontSize: 18, height: 1.3),
               ),
             ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: messageData.images.isNotEmpty
-                ? ImagesSegment(images: messageData.images, height: 300)
-                : messageData.video.isNotEmpty
+            child: widget.messageData.images.isNotEmpty
+                ? ImagesSegment(images: widget.messageData.images, height: 300)
+                : widget.messageData.video.isNotEmpty
                     ? SizedBox(
                         height: 300,
                         child: VideoSegment(
-                            id: "msg-video-${messageData.id}",
-                            video: messageData.video),
+                            id: "msg-video-${widget.messageData.id}",
+                            video: widget.messageData.video),
                       )
-                    : messageData.link.isNotEmpty
-                        ? LinkSegment(link: messageData.link)
+                    : widget.messageData.link.isNotEmpty
+                        ? LinkSegment(link: widget.messageData.link)
                         : const SizedBox(),
           ),
           Row(
             children: [
               Text(
-                timeago.format(DateTime.parse(messageData.created.toString())),
+                timeago.format(
+                    DateTime.parse(widget.messageData.created.toString())),
                 style: const TextStyle(fontSize: 14, color: Colors.black54),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 5.0),
-                child: Icon(messageData.seen ? Icons.done_all : Icons.check,
-                    size: 14),
-              ),
+              if (msgUser == currentUser)
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Icon(seen ? Icons.done_all : Icons.check, size: 14),
+                ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // dispose message timer
+    if (_timerMessageState.isActive) {
+      _timerMessageState.cancel();
+    }
+    super.dispose();
   }
 }
