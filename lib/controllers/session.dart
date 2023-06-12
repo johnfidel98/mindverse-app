@@ -131,6 +131,17 @@ class SessionController extends GetxController {
     });
   }
 
+  Future<aw.DocumentList> searchProfile({required String q}) =>
+      _database.listDocuments(
+          databaseId: _appDetails.databaseId,
+          collectionId: collections["profiles"],
+          queries: [Query.search('\$id', q), Query.limit(10)]);
+
+  Future updateGroup(
+          {required String groupId, required Map newDetails}) async =>
+      await updateDoc(
+          collectionName: "groups", docId: groupId, data: newDetails);
+
   Future<Group> getGroup(
       {required String groupId, bool newDetails = false}) async {
     // check if group already processed

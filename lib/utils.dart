@@ -97,15 +97,17 @@ class GeneralLoading extends StatelessWidget {
     super.key,
     this.artifacts = '...',
     this.message,
+    this.bgColor = Colors.white54,
   });
 
   final String? artifacts;
   final String? message;
+  final Color? bgColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white54,
+      color: bgColor,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -321,6 +323,27 @@ class _StatusBarColorObserverState extends State<StatusBarColorObserver>
   @override
   Widget build(BuildContext context) {
     return widget.child;
+  }
+}
+
+class SlideIndicator extends StatelessWidget {
+  const SlideIndicator({
+    super.key,
+    this.height = 5,
+  });
+
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width / 4),
+      child: Divider(
+        color: htSolid5,
+        thickness: height,
+      ),
+    );
   }
 }
 

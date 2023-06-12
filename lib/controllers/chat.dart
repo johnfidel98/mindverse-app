@@ -64,6 +64,8 @@ class ChatController extends GetxController {
         processed.add(msg.id);
       }
     }
+
+    update();
   }
 
   Future<Message> getMessage(
@@ -275,6 +277,7 @@ class ChatController extends GetxController {
         messages.clear();
       }
 
+      List<Message> nMessages = [];
       // process reversed documents order
       for (aw.Document doc in docs.documents) {
         UserProfile owner = await ses.getProfile(uname: doc.data['sourceId']);
@@ -309,8 +312,10 @@ class ChatController extends GetxController {
         }
 
         // add message to messages
-        messages.add(newMessage);
+        nMessages.add(newMessage);
       }
+
+      messages.addAll(nMessages);
 
       // update loading interface
       loadingMessages.value = false;

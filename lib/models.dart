@@ -104,7 +104,7 @@ class Message {
       created: DateTime.parse(json['\$createdAt']),
       video: json['video'] ?? '',
       link: json['link'] ?? '',
-      readers: json['isRead'],
+      readers: json['isRead'].cast<String>(),
     );
   }
 }

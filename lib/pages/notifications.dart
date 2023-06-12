@@ -173,22 +173,28 @@ class NotificationTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      height: 1.2,
-                      color: htSolid5,
-                    ),
-                  ),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width - 120,
+                    width: MediaQuery.of(context).size.width - 110,
                     child: Text(
-                      body['msg'],
+                      title,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         height: 1.2,
                         color: htSolid5,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width - 110,
+                      child: Text(
+                        body['msg'],
+                        style: const TextStyle(
+                          fontSize: 18,
+                          height: 1.2,
+                          color: htSolid5,
+                        ),
                       ),
                     ),
                   ),

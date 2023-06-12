@@ -124,15 +124,7 @@ class _ContactListingState extends State<ContactListing>
   Widget build(BuildContext context) {
     return Obx(() => Column(
           children: [
-            if (widget.onDrawer)
-              Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: MediaQuery.of(context).size.width / 4),
-                child: const Divider(
-                  color: htSolid5,
-                  thickness: 5,
-                ),
-              ),
+            if (widget.onDrawer) const SlideIndicator(),
             HomeTitle(
               title: widget.known ? 'Contacts' : 'Unknown',
               stats: widget.known
@@ -290,7 +282,9 @@ class _ContactTileState extends State<ContactTile> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                           content: Text(
-                                              'Invite sent to ${widget.cnt.email!}')),
+                                        'Invite sent to ${widget.cnt.email!}',
+                                        textAlign: TextAlign.center,
+                                      )),
                                     );
                                   },
                                 ),

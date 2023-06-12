@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mindverse/components/text.dart';
+import 'package:mindverse/pages/profile.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:appwrite/models.dart' as aw;
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -353,6 +355,421 @@ class GroupTile extends StatelessWidget {
               NumberCircleCount(value: grp.count, fontSize: 15),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class GroupManage extends StatefulWidget {
+  const GroupManage({Key? key, this.cancel, required this.grp})
+      : super(key: key);
+
+  final Function()? cancel;
+  final Group grp;
+
+  @override
+  State<GroupManage> createState() => _GroupManageState();
+}
+
+class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
+  final SessionController sc = Get.find<SessionController>();
+  final ChatController cc = Get.find<ChatController>();
+
+  bool loadingGroup = true;
+  bool loadingSearch = false;
+  String mode = 'members';
+  List<UserProfile> members = [];
+  List<UserProfile> matches = [];
+
+  final TextEditingController gr = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // add listener to note text changes
+    gr.addListener(nameSearch);
+
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => loadMembers());
+  }
+
+  void nameSearch() async {
+    // check for text input
+    if (gr.text.isNotEmpty) {
+      // change listing mode
+      setState(() {
+        mode = 'search';
+        loadingSearch = true;
+      });
+
+      await sc.searchProfile(q: gr.text).then((aw.DocumentList docs) async {
+        // process profile matches
+        List<UserProfile> newMatches = [];
+        for (aw.Document doc in docs.documents) {
+          // resolve profile
+          UserProfile pm = await sc.getProfile(uname: doc.$id);
+          newMatches.add(pm);
+        }
+
+        // update state
+        setState(() {
+          matches = newMatches;
+          loadingSearch = false;
+        });
+      });
+    }
+  }
+
+  void loadMembers() async {
+    // get group member profiles
+    List<UserProfile> tMembers = [];
+    for (String m in widget.grp.members!) {
+      tMembers.add(await sc.getProfile(uname: m));
+    }
+
+    // update state
+    setState(() {
+      members = tMembers;
+      loadingGroup = false;
+    });
+  }
+
+  void removeMember(String uname) async {
+    List<String> newMembers = widget.grp.members!.cast<String>();
+    newMembers.remove(uname);
+
+    // update details
+    await sc.updateGroup(
+        groupId: widget.grp.id,
+        newDetails: {'dstEntities': newMembers}).then((_) {
+      // update state
+      setState(() {
+        loadingGroup = true;
+      });
+
+      // reload members
+      loadMembers();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Member Removed!", textAlign: TextAlign.center)),
+      );
+    });
+  }
+
+  void addMember(String uname) async {
+    List<String> allMembers = widget.grp.members!.cast<String>();
+
+    // check if not in group
+    if (!allMembers.contains(uname)) {
+      // add member to group
+      allMembers.add(uname);
+    }
+
+    // update details
+    await sc.updateGroup(
+        groupId: widget.grp.id,
+        newDetails: {'dstEntities': allMembers}).then((_) {
+      // update state
+      setState(() {
+        loadingGroup = true;
+      });
+
+      // reload members
+      loadMembers();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Member Added!", textAlign: TextAlign.center)),
+      );
+    });
+  }
+
+  void removeGroup() async {
+    sc.deleteDoc(collectionName: 'groups', docId: widget.grp.id).then((_) {
+      // navigate back home
+      Get.offAllNamed('/home');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.grey[200],
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SlideIndicator(height: 2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0, bottom: 15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                          widget.grp.admin == sc.username.value
+                              ? 'Manage Group'
+                              : 'View Members',
+                          style: defaultTextStyle.copyWith(fontSize: 25)),
+                      if (widget.grp.admin == sc.username.value)
+                        IconButton(
+                            onPressed: () => showAlertDialog(
+                                  context: context,
+                                  title: 'Confirm Group Deletion',
+                                  msg:
+                                      'Are you sure you want to delete the group "${widget.grp.name}"?',
+                                  onOk: () => removeGroup(),
+                                ),
+                            icon: const Icon(
+                              Icons.delete,
+                              color: htSolid5,
+                            ))
+                    ],
+                  ),
+                ),
+                loadingGroup
+                    ? const Expanded(
+                        child: GeneralLoading(
+                          artifacts: 'Members',
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (widget.grp.admin == sc.username.value)
+                              MVTextInput(
+                                hintText: 'New Member',
+                                suffixWidget: gr.text.isNotEmpty
+                                    ? IconButton(
+                                        onPressed: () {
+                                          gr.clear();
+
+                                          // reset to group members listing
+                                          setState(() {
+                                            mode = 'members';
+                                          });
+                                        },
+                                        icon: const Icon(Icons.cancel))
+                                    : null,
+                                controller: gr,
+                                onTappedOutside: () {
+                                  if (gr.text.isEmpty) {
+                                    // reset to group members listing
+                                    setState(() {
+                                      mode = 'members';
+                                    });
+                                  }
+                                },
+                                prefixIcon: const Icon(Icons.person),
+                              ),
+                            SizedBox(
+                                height: widget.grp.admin == sc.username.value
+                                    ? 10
+                                    : 0),
+                            mode == 'search'
+                                ? loadingSearch
+                                    ? const Padding(
+                                        padding: EdgeInsets.only(top: 80.0),
+                                        child: GeneralLoading(
+                                          artifacts: 'Search',
+                                          bgColor: null,
+                                        ),
+                                      )
+                                    : GroupList(
+                                        title: 'Search Results',
+                                        members: matches,
+                                        grp: widget.grp,
+                                        action: addMember,
+                                      )
+                                : GroupList(
+                                    title: 'Members',
+                                    members: members,
+                                    action: removeMember,
+                                    grp: widget.grp),
+                          ],
+                        ),
+                      ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    // remove namesearch listener
+    gr.removeListener(nameSearch);
+
+    super.dispose();
+  }
+}
+
+class GroupList extends StatelessWidget {
+  const GroupList(
+      {Key? key,
+      required this.action,
+      required this.members,
+      required this.grp,
+      required this.title})
+      : super(key: key);
+
+  final Function(String) action;
+  final List<UserProfile> members;
+  final String title;
+  final Group grp;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GroupTitle(title: title),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const ClampingScrollPhysics(),
+          itemCount: members.length,
+          itemBuilder: (BuildContext context, int index) {
+            UserProfile p = members[index];
+            if (title == 'Members') {
+              return GroupMemberTile(
+                profile: p,
+                group: grp,
+                actionFunc: () => showAlertDialog(
+                  context: context,
+                  title: 'Confirm Member Removal',
+                  msg:
+                      'Are you sure you want to remove "${p.name}" from the group "${grp.name}"?',
+                  onOk: () => action(p.username),
+                ),
+              );
+            } else {
+              return GroupMemberTile(
+                profile: p,
+                group: grp,
+                actionName: 'Add',
+                actionFunc: () => showAlertDialog(
+                  context: context,
+                  title: 'Confirm New Member',
+                  msg:
+                      'Are you sure you want to add "${p.name}" to the group "${grp.name}"?',
+                  onOk: () => action(p.username),
+                ),
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class GroupTitle extends StatelessWidget {
+  const GroupTitle({
+    super.key,
+    required this.title,
+  });
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        title,
+        style: defaultTextStyle.copyWith(fontSize: 20),
+      ),
+    );
+  }
+}
+
+class GroupMemberTile extends StatelessWidget {
+  GroupMemberTile({
+    super.key,
+    required this.profile,
+    this.actionFunc,
+    this.actionName = 'Remove',
+    required this.group,
+  });
+
+  final UserProfile profile;
+  final Group group;
+  final String actionName;
+  final Function()? actionFunc;
+
+  final SessionController sc = Get.find<SessionController>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Get.to(() => ProfilePage(profile: profile)),
+                  child: AvatarSegment(
+                    userProfile: profile,
+                    size: 60,
+                    expanded: false,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      NamingSegment(
+                        owner: profile,
+                        size: 20,
+                        vertical: true,
+                        height: 1.2,
+                        maxWidth: MediaQuery.of(context).size.width - 250,
+                      ),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width - 250,
+                        child: Text(
+                          group.admin == profile.username
+                              ? 'Group Admin'
+                              : group.members!.contains(profile.username)
+                                  ? 'Group Member'
+                                  : profile.bio,
+                          overflow: TextOverflow.ellipsis,
+                          style: defaultTextStyle.copyWith(
+                              fontSize: 16, height: 1.5, color: htSolid2),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+            if (group.admin == sc.username.value &&
+                sc.username.value != profile.username)
+              InterfaceButton(
+                  onPressed: actionFunc,
+                  label: actionName,
+                  icon: actionName == 'Add'
+                      ? Icons.person_add
+                      : Icons.delete_outline,
+                  alt: true),
+          ],
         ),
       ),
     );

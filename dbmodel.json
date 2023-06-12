@@ -7,7 +7,7 @@
         "*userId[36]": "str",
         "lastOnline": "datetime"
     },
-    "groups(permissions=**-*)": {
+    "groups(permissions=****)": {
         "*sourceId[36]": "str",
         "*name[30]": "str",
         "logo[50]": "str",

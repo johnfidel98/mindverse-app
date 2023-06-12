@@ -12,7 +12,9 @@ import 'package:mindverse/constants.dart';
 import 'package:mindverse/controllers/chat.dart';
 import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
+import 'package:mindverse/pages/homeTabs/groups.dart';
 import 'package:mindverse/utils.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:uuid/uuid.dart';
 
@@ -51,6 +53,9 @@ class _ConversationPageState extends State<ConversationPage>
   bool _reachedEnd = false;
   bool _loadedEntity = false;
   bool _isGroup = false;
+
+  late final PanelController _controllerSlidePanel;
+
   Completer<void> completerEntityLoaded = Completer<void>();
 
   @override
@@ -59,6 +64,8 @@ class _ConversationPageState extends State<ConversationPage>
 
     // monitor scrolling
     _scrollController.addListener(_scrollListener);
+
+    _controllerSlidePanel = PanelController();
 
     // update loading
     cc.setMessagesLoading(true);
@@ -223,76 +230,89 @@ class _ConversationPageState extends State<ConversationPage>
         backgroundColor: Colors.white,
         actions: _isGroup
             ? [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.view_list,
-                    color: htSolid5,
-                  ),
-                ),
-                if (groupData.admin == sc.username.value)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.person_add,
-                        color: htSolid5,
-                      ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: IconButton(
+                    onPressed: () => _controllerSlidePanel.isPanelClosed
+                        ? _controllerSlidePanel.open()
+                        : _controllerSlidePanel.close(),
+                    icon: const Icon(
+                      Icons.view_list,
+                      color: htSolid5,
                     ),
-                  )
+                  ),
+                )
               ]
             : null,
       ),
       body: Column(
         children: [
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10.0),
-              child: Obx(
-                () => cc.loadingMessages.value
-                    ? const GeneralLoading(
-                        artifacts: 'Messages',
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        reverse: true,
-                        itemCount: cc.messages.length,
-                        itemBuilder: (context, index) {
-                          Message messageData = cc.messages[index];
-                          var msgUser = messageData.profile.username;
-                          var currentUser = sc.username.value;
-                          return Column(
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: msgUser == currentUser ? 20.0 : 5.0,
-                                  right: msgUser == currentUser ? 5.0 : 20.0,
-                                ),
-                                child: Card(
-                                  margin: const EdgeInsets.only(
-                                      top: 15.0, bottom: 2),
-                                  color: msgUser == currentUser
-                                      ? htSolid1
-                                      : Colors.grey[100],
-                                  elevation: 2,
-                                  child: ConversationComponent(
-                                    messageData: messageData,
-                                    session: sc,
-                                  ),
-                                ),
-                              ),
-                              index % 8 == 0
-                                  ? const Padding(
-                                      padding: EdgeInsets.only(top: 15.0),
-                                      child: AdaptiveAdvert(),
-                                    )
-                                  : const SizedBox(),
-                            ],
-                          );
-                        },
-                      ),
-              ),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Obx(
+                    () => cc.loadingMessages.value
+                        ? const GeneralLoading(
+                            artifacts: 'Messages',
+                          )
+                        : GetBuilder<ChatController>(builder: (_) {
+                            return ListView.builder(
+                              controller: _scrollController,
+                              reverse: true,
+                              itemCount: cc.messages.length,
+                              itemBuilder: (context, index) {
+                                Message messageData = cc.messages[index];
+                                var msgUser = messageData.profile.username;
+                                var currentUser = sc.username.value;
+                                return Column(
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                        left:
+                                            msgUser == currentUser ? 20.0 : 5.0,
+                                        right:
+                                            msgUser == currentUser ? 5.0 : 20.0,
+                                      ),
+                                      child: Card(
+                                        margin: const EdgeInsets.only(
+                                            top: 15.0, bottom: 2),
+                                        color: msgUser == currentUser
+                                            ? htSolid1
+                                            : Colors.grey[100],
+                                        elevation: 2,
+                                        child: ConversationComponent(
+                                          messageData: messageData,
+                                          session: sc,
+                                        ),
+                                      ),
+                                    ),
+                                    index % 8 == 0
+                                        ? const Padding(
+                                            padding: EdgeInsets.only(top: 15.0),
+                                            child: AdaptiveAdvert(),
+                                          )
+                                        : const SizedBox(),
+                                  ],
+                                );
+                              },
+                            );
+                          }),
+                  ),
+                ),
+                if (_isGroup)
+                  SlidingUpPanel(
+                    maxHeight: MediaQuery.of(context).size.height / 1.3,
+                    minHeight: 15,
+                    //slideDirection: SlideDirection.DOWN,
+                    controller: _controllerSlidePanel,
+                    panel: GroupManage(
+                      grp: groupData,
+                      cancel: () => _controllerSlidePanel.close(),
+                    ),
+                  )
+              ],
             ),
           ),
           ChatInputBar(
