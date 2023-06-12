@@ -396,11 +396,13 @@ class ImagePath extends StatefulWidget {
     required this.bucket,
     required this.imageId,
     this.size = 60,
+    this.isCircular = false,
   });
 
   final String bucket;
   final String imageId;
   final double size;
+  final bool isCircular;
 
   @override
   State<ImagePath> createState() => _ImagePathState();
@@ -434,8 +436,11 @@ class _ImagePathState extends State<ImagePath> {
                 clipBehavior: Clip.antiAlias,
                 height: widget.size,
                 width: widget.size,
-                decoration: const BoxDecoration(
-                    color: htSolid2, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                    color: htSolid2,
+                    shape: widget.isCircular
+                        ? BoxShape.circle
+                        : BoxShape.rectangle),
                 child: Image.memory(
                   snapshot.data!,
                   height: widget.size,
@@ -524,15 +529,15 @@ class AccountDropdownSegment extends StatelessWidget {
         ),
       ],
       onSelected: (selected) => navMenu(context, session, selected),
-      child: AvatarSegment(
-        userProfile: UserProfile(
-          username: session.username.value,
-          avatar: session.image.value,
-        ),
-        expanded: false,
-        isCircular: true,
-        size: 35,
-      ),
+      child: Obx(() => AvatarSegment(
+            userProfile: UserProfile(
+              username: session.username.value,
+              avatar: session.image.value,
+            ),
+            expanded: false,
+            isCircular: true,
+            size: 35,
+          )),
     );
   }
 }

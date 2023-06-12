@@ -60,6 +60,7 @@ class _AuthPageState extends State<AuthPage> {
               // set user details
               session.setBio(profile.bio);
               session.setName(profile.name);
+              session.setImage(profile.avatar);
 
               Get.offAll(() => const HomePage());
               session.setActionStatus(true);

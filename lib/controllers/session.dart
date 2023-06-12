@@ -352,6 +352,8 @@ class SessionController extends GetxController {
 
   setLoc(bool en) => enLocation.value = en;
 
+  setImage(String img) => image.value = img;
+
   setName(String nme) => name.value = nme;
 
   getRealtime() => _realtime;

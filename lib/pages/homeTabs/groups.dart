@@ -261,6 +261,7 @@ class GroupTile extends StatelessWidget {
                       ? ImagePath(
                           bucket: 'group_logos',
                           imageId: grp.logo!,
+                          isCircular: true,
                         )
                       : Container(
                           height: 60,
@@ -583,6 +584,7 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
                               ? ImagePath(
                                   bucket: 'group_logos',
                                   imageId: logoId!,
+                                  isCircular: true,
                                   size: 100)
                               : Container(
                                   height: 100,

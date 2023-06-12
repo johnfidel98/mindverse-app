@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:appwrite/models.dart' as aw;
 import 'package:mindverse/components/avatar.dart';
-import 'package:mindverse/components/button.dart';
 import 'package:mindverse/components/text.dart';
 import 'package:mindverse/constants.dart';
 import 'package:mindverse/controllers/session.dart';
@@ -18,6 +19,36 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final SessionController sc = Get.find<SessionController>();
+
+  _selectAvatar(BuildContext ctx) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? i = await picker.pickImage(source: ImageSource.gallery);
+
+    String msg = '';
+    if (i != null) {
+      // upload group logo
+      await sc.uploadFile(
+          bucket: 'profile_avatars',
+          f: {'name': i.name, 'path': i.path}).then((aw.File file) async {
+        // update details in db
+        await sc.updateDoc(
+            collectionName: 'profiles',
+            docId: widget.profile.username,
+            data: {'avatar': file.$id});
+
+        // update state avatar
+        sc.setImage(file.$id);
+
+        msg = "Avatar successfully uploaded!";
+      });
+    } else {
+      msg = "No image was selected!";
+    }
+
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(content: Text(msg, textAlign: TextAlign.center)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +77,43 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     Column(
                       children: [
-                        AvatarSegment(
-                          userProfile: widget.profile,
-                          expanded: false,
-                          size: 160,
+                        GestureDetector(
+                          onTap: widget.profile.username == sc.username.value
+                              ? () => _selectAvatar(context)
+                              : () {},
+                          child: Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: [
+                              AvatarSegment(
+                                userProfile: widget.profile,
+                                expanded: false,
+                                size: 160,
+                              ),
+                              if (widget.profile.username == sc.username.value)
+                                Container(
+                                  height: 160,
+                                  width: 160,
+                                  color: htTrans3,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.edit,
+                                        color: htSolid1,
+                                        size: 40,
+                                      ),
+                                      Text(
+                                        'Change Avatar',
+                                        style: defaultTextStyle.copyWith(
+                                          fontSize: 18,
+                                          color: htSolid1,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                )
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 30),
                         NamingSegment(
@@ -66,33 +130,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ],
                     ),
-                    Card(
-                      color: const Color.fromARGB(255, 248, 110, 100),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Danger Zone',
-                              style: defaultTextStyle.copyWith(fontSize: 18),
-                            ),
-                            Text(
-                              'Kindly take note that deleting your account (by pressing the button below) is completely irreversible. ',
-                              style: defaultTextStyle.copyWith(fontSize: 14),
-                              textAlign: TextAlign.center,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10.0),
-                              child: MVButton(
-                                onClick: () {},
-                                label: 'Delete Account',
-                                paddingH: 0,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
                   ],
                 ),
               ),

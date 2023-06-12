@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:mindverse/constants.dart';
 import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/models.dart';
+import 'package:mindverse/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';
 
@@ -124,41 +126,48 @@ class _AvatarSegmentState extends State<AvatarSegment> {
               ),
             ),
             clipBehavior: Clip.antiAliasWithSaveLayer,
-            child: Stack(
-              children: [
-                Image.asset(
-                  'assets/images/user.png',
-                  height: widget.size,
-                  width: widget.size,
-                  fit: BoxFit.contain,
-                ),
-                if (online)
-                  Positioned(
-                      bottom: 4,
-                      left: 4,
-                      child: widget.isCircular
+            child: Obx(() => Stack(
+                  children: [
+                    sc.image.value.isNotEmpty
+                        ? ImagePath(
+                            bucket: 'profile_avatars',
+                            imageId: sc.image.value,
+                            size: widget.size,
+                            isCircular: widget.isCircular,
+                          )
+                        : Image.asset(
+                            'assets/images/user.png',
+                            height: widget.size,
+                            width: widget.size,
+                            fit: BoxFit.contain,
+                          ),
+                    if (online)
+                      Positioned(
+                          bottom: 4,
+                          left: 4,
+                          child: widget.isCircular
+                              ? Container(
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                    color: htSolid4,
+                                  ),
+                                  height: widget.size / 4,
+                                  width: widget.size / 4,
+                                )
+                              : OnlineIndicator(size: widget.size / 4)),
+                    Positioned(
+                      child: widget.overlayIcon != null
                           ? Container(
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                                color: htSolid4,
-                              ),
-                              height: widget.size / 4,
-                              width: widget.size / 4,
+                              width: widget.size,
+                              height: widget.size,
+                              color: Colors.black26,
+                              child: widget.overlayIcon,
                             )
-                          : OnlineIndicator(size: widget.size / 4)),
-                Positioned(
-                  child: widget.overlayIcon != null
-                      ? Container(
-                          width: widget.size,
-                          height: widget.size,
-                          color: Colors.black26,
-                          child: widget.overlayIcon,
-                        )
-                      : const SizedBox(),
-                ),
-              ],
-            ),
+                          : const SizedBox(),
+                    ),
+                  ],
+                )),
           ),
           widget.expanded
               ? Padding(

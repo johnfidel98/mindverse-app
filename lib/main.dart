@@ -41,6 +41,7 @@ void main() {
           // set user details
           session.setBio(profile.bio);
           session.setName(profile.name);
+          session.setImage(profile.avatar);
         });
 
         path = '/home';
