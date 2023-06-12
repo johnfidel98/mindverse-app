@@ -367,10 +367,20 @@ class _ConversationComponentState extends State<ConversationComponent>
 
   void postInit() {
     // check if already seen
-    if (widget.grp.members!.length - 1 == widget.messageData.readers.length) {
-      setState(() {
-        seen = true;
-      });
+    if (widget.grp.members != null) {
+      // check for group conversations
+      if (widget.grp.members!.length - 1 == widget.messageData.readers.length) {
+        setState(() {
+          seen = true;
+        });
+      }
+    } else {
+      // check for single conversation
+      if (widget.messageData.seen) {
+        setState(() {
+          seen = true;
+        });
+      }
     }
   }
 

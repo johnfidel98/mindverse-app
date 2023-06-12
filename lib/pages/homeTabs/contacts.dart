@@ -261,11 +261,13 @@ class _ContactTileState extends State<ContactTile> {
               ],
             ),
             widget.cnt.profile != null
-                ? InterfaceButton(
-                    onPressed: startConversation,
-                    label: 'Chat',
-                    icon: Icons.chat_bubble,
-                    alt: true)
+                ? widget.cnt.profile!.username != sc.username.value
+                    ? InterfaceButton(
+                        onPressed: startConversation,
+                        label: 'Chat',
+                        icon: Icons.chat_bubble,
+                        alt: true)
+                    : const SizedBox()
                 : widget.cnt.email != null
                     ? InterfaceButton(
                         label: sentInvite ? 'Sent' : 'Invite',
