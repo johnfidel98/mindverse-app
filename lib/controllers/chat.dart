@@ -286,7 +286,7 @@ class ChatController extends GetxController {
 
         // add images if exists
         if (doc.data['images'].length > 0) {
-          newMessage.images = doc.data['images'];
+          newMessage.images = doc.data['images'].cast<String>();
         }
 
         // get referenced message

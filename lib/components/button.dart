@@ -126,6 +126,53 @@ class _MVButtonState extends State<MVButton> {
   }
 }
 
+class ConversationButton extends StatelessWidget {
+  const ConversationButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    required this.iconData,
+    this.middle = false,
+  });
+
+  final String label;
+  final IconData iconData;
+  final Function() onPressed;
+  final bool middle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+            border: middle
+                ? const Border.symmetric(
+                    vertical: BorderSide(color: htSolid2, width: 0.5))
+                : null),
+        child: TextButton(
+          onPressed: onPressed,
+          style: const ButtonStyle(
+            padding:
+                MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 15.0)),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                iconData,
+                color: htSolid5,
+              ),
+              Text(
+                label,
+                style: defaultTextStyle.copyWith(color: htSolid5),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class InterfaceButton extends StatelessWidget {
   final String label;
   final Function()? onPressed;
@@ -133,6 +180,7 @@ class InterfaceButton extends StatelessWidget {
   final IconData? icon;
   final bool? alt;
   final double size;
+  final double borderRadius;
   final Widget? iconWidget;
 
   const InterfaceButton({
@@ -142,6 +190,7 @@ class InterfaceButton extends StatelessWidget {
     this.alt = false,
     this.bgColor,
     this.iconWidget,
+    this.borderRadius = 5,
     this.icon,
     this.size = 0,
   });
@@ -160,7 +209,7 @@ class InterfaceButton extends StatelessWidget {
             ),
             shape: MaterialStatePropertyAll(
               RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(borderRadius),
                   side: alt!
                       ? const BorderSide(color: htSolid3)
                       : BorderSide.none),

@@ -15,7 +15,6 @@ dependencies:
   any_link_preview: ^3.0.0
   appwrite: 8.2.0
   auto_size_text: ^3.0.0
-  cached_network_image: ^3.2.3
   chewie: ^1.5.0
   flutter:
     sdk: flutter

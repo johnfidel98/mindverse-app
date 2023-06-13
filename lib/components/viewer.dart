@@ -1,5 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:mindverse/controllers/session.dart';
 import 'package:mindverse/utils.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
@@ -21,18 +24,35 @@ class ImagesViewer extends StatefulWidget {
   State<ImagesViewer> createState() => _ImagesViewerState();
 }
 
-class _ImagesViewerState extends State<ImagesViewer> {
+class _ImagesViewerState extends State<ImagesViewer>
+    with WidgetsBindingObserver {
+  final SessionController sc = Get.find<SessionController>();
   late final PageController pController;
-  late List<ImageProvider> imageObjects;
+  List<ImageProvider> imageObjects = [];
 
   @override
   void initState() {
-    imageObjects =
-        widget.images.map((img) => CachedNetworkImageProvider(img)).toList();
+    super.initState();
     pController =
         PageController(viewportFraction: 1, initialPage: widget.initialIndex!);
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => postInit());
+  }
 
-    super.initState();
+  void postInit() async {
+    // get images
+    List<ImageProvider> imp = [];
+    for (String img in widget.images) {
+      Uint8List imageBytes =
+          await sc.getFile(bucket: 'chat_images', fileId: img);
+      ImageProvider imageProvider = MemoryImage(imageBytes);
+      imp.add(imageProvider);
+    }
+
+    // update state
+    setState(() {
+      imageObjects = imp;
+    });
   }
 
   @override

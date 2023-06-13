@@ -154,6 +154,18 @@ class SessionController extends GetxController {
         ),
       );
 
+  Future getFile({required String fileId, required String bucket}) =>
+      _storage.getFileView(
+        bucketId: storages[bucket],
+        fileId: fileId,
+      );
+
+  Future delFile({required String bucket, required String fileId}) async =>
+      await _storage.deleteFile(
+        bucketId: storages[bucket],
+        fileId: fileId,
+      );
+
   Future<Group> getGroup(
       {required String groupId, bool newDetails = false}) async {
     // check if group already processed

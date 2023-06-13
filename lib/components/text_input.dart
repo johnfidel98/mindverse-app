@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:math' as math;
+import 'package:appwrite/models.dart' as aw;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mindverse/components/button.dart';
 import 'package:mindverse/constants.dart';
 import 'package:mindverse/controllers/chat.dart';
 import 'package:mindverse/controllers/session.dart';
@@ -172,7 +174,9 @@ class _ChatInputBarState extends State<ChatInputBar>
 
   String text = '';
   bool isPosting = false;
+  bool isAttaching = false;
   UserProfile profile = UserProfile(username: unknownBastard);
+  List<Map> uploadedMedia = [];
 
   @override
   void initState() {
@@ -211,31 +215,185 @@ class _ChatInputBarState extends State<ChatInputBar>
     });
 
     // post message
-    await cc.postMessage(ses: sc, data: {
+    Map uploadData = {
       'text': text,
       'sourceId': sc.username.value,
       'entitiesId': widget.entitiesId,
       'toGroup': widget.isGroup,
-    }).then((mDoc) {
+    };
+
+    // attach media if present
+    List<String> imUp = [];
+    for (Map mUp in uploadedMedia) {
+      if (mUp['media'] == 'video') {
+        // set video to upload
+        uploadData['video'] = mUp['id'];
+        break;
+      } else {
+        imUp.add(mUp['id']);
+      }
+    }
+    if (imUp.isNotEmpty) {
+      // set images to upload
+      uploadData['images'] = imUp;
+    }
+
+    await cc.postMessage(ses: sc, data: uploadData).then((mDoc) {
       // add message to messages
       cc.addMessage(Message.fromDoc(doc: mDoc, profile: profile));
 
       // clean message
       ec.text = '';
 
+      // reset state
       setState(() {
         isPosting = false;
+        uploadedMedia = [];
+        isAttaching = false;
       });
     });
   }
 
-  void onAttached() {}
+  void onAttach() => setState(() => isAttaching = !isAttaching);
+
+  _removeMedia(Map mData) async {
+    // remove unwanted media
+    String bkt = 'chat_images';
+    if (mData['media'] == 'video') {
+      bkt = 'chat_videos';
+    }
+    await sc.delFile(bucket: bkt, fileId: mData['id']).then((_) {
+      // remove media from list & update state
+      List<Map> uMedia = uploadedMedia;
+      uMedia.removeWhere((Map e) => e['id'] == mData['id']);
+      setState(() {
+        uploadedMedia = uMedia;
+      });
+    });
+  }
+
+  _selectImage() async {
+    final ImagePicker picker = ImagePicker();
+    final List<XFile> ims = await picker.pickMultiImage();
+
+    List<Map> ui = [];
+    for (XFile i in ims) {
+      // upload group logo
+      await sc.uploadFile(
+          bucket: 'chat_images',
+          f: {'name': i.name, 'path': i.path}).then((aw.File file) {
+        // add to temp list
+        ui.add({'media': 'image', 'id': file.$id});
+      });
+    }
+
+    // update state
+    setState(() {
+      uploadedMedia = ui;
+    });
+  }
+
+  _selectVideo() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? i = await picker.pickVideo(source: ImageSource.gallery);
+
+    if (i != null) {
+      // upload group logo
+      await sc.uploadFile(
+          bucket: 'chat_videos',
+          f: {'name': i.name, 'path': i.path}).then((aw.File file) {
+        // update state
+        setState(() {
+          uploadedMedia = [
+            {
+              'media': 'video',
+              'id': file.$id,
+              'mime': file.mimeType,
+              'name': file.name,
+              'size': (file.sizeOriginal / 1000000).ceil(),
+            }
+          ];
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Divider(thickness: 1, color: htSolid5, height: 1),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeIn,
+          height: isAttaching ? 80 : 2,
+          width: MediaQuery.of(context).size.width,
+          color: Colors.grey.shade200,
+          child: uploadedMedia.isNotEmpty
+              ? ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  physics: const ClampingScrollPhysics(),
+                  itemCount: uploadedMedia.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    Map m = uploadedMedia[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4.0, horizontal: 5.0),
+                      child: Container(
+                        child: m['media'] == 'video'
+                            ? VideoPath(remove: () => _removeMedia(m), data: m)
+                            : Stack(
+                                children: [
+                                  ImagePath(
+                                    bucket: 'chat_images',
+                                    imageId: m['id'],
+                                    size: 70,
+                                    isCircular: true,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => _removeMedia(m),
+                                    child: Container(
+                                      height: 70,
+                                      width: 70,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                      ),
+                    );
+                  },
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ConversationButton(
+                      label: 'Image',
+                      onPressed: _selectImage,
+                      iconData: Icons.photo_library,
+                    ),
+                    ConversationButton(
+                      label: 'Video',
+                      onPressed: _selectVideo,
+                      middle: true,
+                      iconData: Icons.video_library,
+                    ),
+                    // ConversationButton(
+                    //   label: 'Link',
+                    //   onPressed: () {},
+                    //   iconData: Icons.link,
+                    // ),
+                  ],
+                ),
+        ),
         TextFormField(
           maxLines: 5,
           minLines: 1,
@@ -254,13 +412,11 @@ class _ChatInputBarState extends State<ChatInputBar>
                 textStyle: const TextStyle(fontSize: 18, height: 1.7)),
             prefixIcon: Material(
               child: IconButton(
-                onPressed: onAttached,
-                icon: Transform.rotate(
-                    angle: 40 * math.pi / 180,
-                    child: const Icon(
-                      Icons.attach_file,
-                      color: htSolid5,
-                    )),
+                onPressed: onAttach,
+                icon: Icon(
+                  isAttaching ? Icons.expand_more : Icons.expand_less,
+                  color: htSolid5,
+                ),
               ),
             ),
             suffixIcon: Material(
