@@ -192,11 +192,11 @@ class ChatController extends GetxController {
         rawConversations.add(cMap);
       }
 
-      // order conversations by latest
+      // order conversations
       rawConversations.sort((mapA, mapB) => mapA["cr"].compareTo(mapB["cr"]));
 
       // finalize processing
-      for (Map conv in rawConversations) {
+      for (Map conv in rawConversations.reversed) {
         // ensure duplicate conversations are not processed
         if (!processedConversationsIds.contains(conv['un'])) {
           // add new conv to conversations

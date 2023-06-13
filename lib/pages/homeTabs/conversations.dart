@@ -47,55 +47,65 @@ class _ConversationsTabState extends State<ConversationsTab> {
     return Stack(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 6.0),
           child: Obx(
-            () => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const RoamCard(),
-                cc.conversations.isNotEmpty
-                    ? HomeTitle(
-                        title: 'Conversations',
-                        statsWidget: getConvAction('New'),
-                      )
-                    : const SizedBox(),
-                cc.conversations.isNotEmpty
-                    ? SingleChildScrollView(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: const ClampingScrollPhysics(),
-                          itemCount: cc.conversations.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            Conversation c = cc.conversations[index];
-                            return Column(
-                              children: [
-                                ConversationTile(cnv: c),
-                                index % 4 == 0
-                                    ? const Padding(
-                                        padding:
-                                            EdgeInsets.symmetric(vertical: 6),
-                                        child: NativeAdvert(),
-                                      )
-                                    : const SizedBox(),
-                              ],
-                            );
-                          },
-                        ),
-                      )
-                    : Expanded(
-                        child: cc.loadingConversations.value &&
-                                !cc.firstLoadConversations.value
-                            ? const GeneralLoading(
-                                artifacts: 'Conversations',
-                              )
-                            : EmptyMsg(
-                                title: 'Conversations',
-                                message:
-                                    'Chat with people, connect and make friends!',
-                                child: getConvAction('New Conversation'),
-                              ),
-                      ),
-              ],
+            () => RefreshIndicator(
+              onRefresh: () =>
+                  cc.getConversations(sc: sc, username: sc.username.value),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: RoamCard(),
+                    ),
+                    cc.conversations.isNotEmpty
+                        ? HomeTitle(
+                            title: 'Conversations',
+                            statsWidget: getConvAction('New'),
+                          )
+                        : const SizedBox(),
+                    cc.conversations.isNotEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: const ClampingScrollPhysics(),
+                              itemCount: cc.conversations.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                Conversation c = cc.conversations[index];
+                                return Column(
+                                  children: [
+                                    ConversationTile(cnv: c),
+                                    index % 4 == 0
+                                        ? const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 6),
+                                            child: NativeAdvert(),
+                                          )
+                                        : const SizedBox(),
+                                  ],
+                                );
+                              },
+                            ),
+                          )
+                        : Container(
+                            child: cc.loadingConversations.value &&
+                                    !cc.firstLoadConversations.value
+                                ? const GeneralLoading(
+                                    artifacts: 'Conversations',
+                                  )
+                                : EmptyMsg(
+                                    title: 'Conversations',
+                                    message:
+                                        'Chat with people, connect and make friends!',
+                                    child: getConvAction('New Conversation'),
+                                  ),
+                          ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

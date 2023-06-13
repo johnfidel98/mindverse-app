@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
 
     // update conversations
     _timerConversationsUpdate = Timer.periodic(
-        const Duration(seconds: 15),
+        const Duration(seconds: 40),
         (_) async =>
             // update conversations
             await cc.getConversations(sc: sc, username: sc.username.value));

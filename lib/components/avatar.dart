@@ -79,7 +79,7 @@ class _AvatarSegmentState extends State<AvatarSegment>
   void initState() {
     super.initState();
 
-    if (widget.userProfile.username != unknownBastard) {
+    if (widget.userProfile.username != unknownBastard && widget.size > 30) {
       // do online checks
       onlineStatus(null);
 
@@ -142,7 +142,7 @@ class _AvatarSegmentState extends State<AvatarSegment>
                         width: widget.size,
                         fit: BoxFit.contain,
                       ),
-                if (online)
+                if (online && widget.size > 30)
                   Positioned(
                       bottom: 4,
                       left: 4,
@@ -256,7 +256,7 @@ class _AvatarSegmentState extends State<AvatarSegment>
 
   @override
   void dispose() {
-    if (widget.userProfile.username != unknownBastard) {
+    if (widget.userProfile.username != unknownBastard && widget.size > 30) {
       // dispose online timer
       if (_timerOnline.isActive) {
         _timerOnline.cancel();

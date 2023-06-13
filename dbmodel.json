@@ -29,7 +29,6 @@
         "toGroup(default=false)": "bool"
     },
     "atlas(permissions=-*--)": {
-        "tag[20]": "str",
         "entities[50]": "array"
     },
     "secrets(security=true)": {

@@ -142,28 +142,30 @@ class _ContactListingState extends State<ContactListing>
                           ? const TinyProgressIndicator()
                           : null),
             ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const ClampingScrollPhysics(),
-              itemCount: widget.known
-                  ? sc.contactsKnown.length
-                  : sc.contactsUnknown.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Column(
-                  children: [
-                    ContactTile(
-                        cnt: widget.known
-                            ? sc.contactsKnown[index]
-                            : sc.contactsUnknown[index]),
-                    index % 4 == 0
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 2),
-                            child: NativeAdvert(),
-                          )
-                        : const SizedBox(),
-                  ],
-                );
-              },
+            SingleChildScrollView(
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const ClampingScrollPhysics(),
+                itemCount: widget.known
+                    ? sc.contactsKnown.length
+                    : sc.contactsUnknown.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Column(
+                    children: [
+                      ContactTile(
+                          cnt: widget.known
+                              ? sc.contactsKnown[index]
+                              : sc.contactsUnknown[index]),
+                      index % 4 == 0
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 2),
+                              child: NativeAdvert(),
+                            )
+                          : const SizedBox(),
+                    ],
+                  );
+                },
+              ),
             )
           ],
         ));

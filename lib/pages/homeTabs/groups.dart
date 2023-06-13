@@ -47,38 +47,41 @@ class _GroupsTabState extends State<GroupsTab> {
     return Stack(
       children: [
         Obx(() => cc.groups.isNotEmpty
-            ? SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6.0, vertical: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      HomeTitle(
-                        title: 'Groups',
-                        statsWidget: getGroupsAction(),
-                      ),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const ClampingScrollPhysics(),
-                        itemCount: cc.groups.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          Group g = cc.groups[index];
-                          return Column(
-                            children: [
-                              GroupTile(grp: g),
-                              index % 4 == 0
-                                  ? const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 2),
-                                      child: NativeAdvert(),
-                                    )
-                                  : const SizedBox(),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
+            ? RefreshIndicator(
+                onRefresh: () => cc.getGroups(sc: sc),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6.0, vertical: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        HomeTitle(
+                          title: 'Groups',
+                          statsWidget: getGroupsAction(),
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const ClampingScrollPhysics(),
+                          itemCount: cc.groups.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            Group g = cc.groups[index];
+                            return Column(
+                              children: [
+                                GroupTile(grp: g),
+                                index % 4 == 0
+                                    ? const Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 2),
+                                        child: NativeAdvert(),
+                                      )
+                                    : const SizedBox(),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )
@@ -297,12 +300,12 @@ class GroupTile extends StatelessWidget {
                         Row(
                           children: [
                             if (grp.lastProfile != null)
-                              StaticAvatarSegment(
-                                  isCircular: true,
-                                  size: 18,
-                                  path: grp.lastProfile!.avatar.isNotEmpty
-                                      ? grp.lastProfile!.avatar
-                                      : 'assets/images/user.png'),
+                              AvatarSegment(
+                                userProfile: grp.lastProfile!,
+                                size: 18,
+                                expanded: false,
+                                isCircular: true,
+                              ),
                             if (grp.lastProfile != null)
                               const SizedBox(width: 5),
                             grp.lastProfile != null
