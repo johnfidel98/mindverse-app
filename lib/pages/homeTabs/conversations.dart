@@ -93,8 +93,13 @@ class _ConversationsTabState extends State<ConversationsTab> {
                         : Container(
                             child: cc.loadingConversations.value &&
                                     !cc.firstLoadConversations.value
-                                ? const GeneralLoading(
-                                    artifacts: 'Conversations',
+                                ? const Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 70.0),
+                                    child: GeneralLoading(
+                                      bgColor: Colors.transparent,
+                                      artifacts: 'Conversations',
+                                    ),
                                   )
                                 : EmptyMsg(
                                     title: 'Conversations',

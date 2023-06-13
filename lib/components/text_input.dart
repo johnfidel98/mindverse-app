@@ -380,12 +380,12 @@ class _ChatInputBarState extends State<ChatInputBar>
                       onPressed: _selectImage,
                       iconData: Icons.photo_library,
                     ),
-                    ConversationButton(
-                      label: 'Video',
-                      onPressed: _selectVideo,
-                      middle: true,
-                      iconData: Icons.video_library,
-                    ),
+                    // ConversationButton(
+                    //   label: 'Video',
+                    //   onPressed: _selectVideo,
+                    //   middle: true,
+                    //   iconData: Icons.video_library,
+                    // ),
                     // ConversationButton(
                     //   label: 'Link',
                     //   onPressed: () {},

@@ -15,6 +15,7 @@ class SessionController extends GetxController {
   var contactsUnknown = RxList([]);
   var processedContactIds = RxList([]);
 
+  var atlas = RxMap();
   var profiles = RxMap();
   var groups = RxMap();
   var prefs = RxMap();
@@ -274,7 +275,7 @@ class SessionController extends GetxController {
           collectionId: collections[collectionName],
           documentId: docId);
 
-  Future updateDoc(
+  Future<aw.Document> updateDoc(
           {required String collectionName,
           required String docId,
           required Map data}) =>
@@ -293,6 +294,29 @@ class SessionController extends GetxController {
 
   Future updateProfile({required Map data}) =>
       updateDoc(collectionName: 'profiles', docId: username.value, data: data);
+
+  Future getAtlas({String? tag}) {
+    List<String> qr = [
+      Query.limit(100),
+      Query.orderDesc('\$createdAt'),
+    ];
+
+    if (tag != null) {
+      qr.add(Query.search('\$id', tag));
+    }
+
+    return getDocs(
+      collectionName: 'atlas',
+      queries: qr,
+    ).then((aw.DocumentList docList) {
+      // clean existing
+      atlas.clear();
+
+      for (aw.Document a in docList.documents) {
+        atlas[a.$id] = a.data['entities'].cast<String>();
+      }
+    });
+  }
 
   Future sendVerification() => _account.createVerification(
         url: '${_appDetails.website}/verification',

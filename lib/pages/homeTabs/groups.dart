@@ -397,6 +397,9 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
   bool uploadingLogo = false;
   String mode = 'members';
   String? logoId;
+  Group grp = Group(id: unknownBastard, name: 'Loading ...');
+  List<UserProfile> requests = [];
+  List<String> aRequests = [];
   List<UserProfile> members = [];
   List<UserProfile> matches = [];
 
@@ -497,9 +500,17 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
       tMembers.add(await sc.getProfile(uname: m));
     }
 
+    // load requests
+    List<UserProfile> tRequests = [];
+    for (String m in widget.grp.requests!) {
+      tRequests.add(await sc.getProfile(uname: m));
+    }
+
     // update state
     setState(() {
       members = tMembers;
+      requests = tRequests;
+      aRequests = widget.grp.requests!.cast<String>();
       loadingGroup = false;
     });
   }
@@ -536,7 +547,7 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
     });
   }
 
-  void addMember(String uname) async {
+  Future addMember(String uname) async {
     List<String> allMembers = widget.grp.members!.cast<String>();
 
     // check if not in group
@@ -574,6 +585,81 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
     });
   }
 
+  void denyRequest(String uname) async {
+    List<String> rq = [];
+    for (String un in aRequests) {
+      if (un != uname) {
+        rq.add(uname);
+      }
+    }
+    // update details
+    await sc.updateGroup(
+        groupId: widget.grp.id,
+        newDetails: {'requestIds': rq}).then((doc) async {
+      Group g = Group.fromDoc(doc);
+
+      List<UserProfile> req = [];
+      for (UserProfile un in requests) {
+        if (un.username != uname) {
+          req.add(un);
+        }
+      }
+      // update state
+      setState(() {
+        requests = req;
+        aRequests = g.requests!.cast<String>();
+      });
+
+      // reload members
+      await loadMembers();
+
+      // reset to members
+      showMembers();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Denied Join Request!", textAlign: TextAlign.center)),
+      );
+    });
+  }
+
+  void acceptRequest(String uname) async {
+    List<String> rq = [];
+    for (String un in aRequests) {
+      if (un != uname) {
+        rq.add(uname);
+      }
+    }
+    // update details
+    await sc.updateGroup(
+        groupId: widget.grp.id,
+        newDetails: {'requestIds': rq}).then((doc) async {
+      Group g = Group.fromDoc(doc);
+
+      // reload members
+      await addMember(uname);
+
+      List<UserProfile> req = [];
+      for (UserProfile un in requests) {
+        if (un.username != uname) {
+          req.add(un);
+        }
+      }
+
+      // update state
+      setState(() {
+        requests = req;
+        aRequests = g.requests!.cast<String>();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text("Accepted Join Request!", textAlign: TextAlign.center)),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -587,76 +673,79 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
         children: [
           const SlideIndicator(height: 2),
           Expanded(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 10.0),
-                  child: GestureDetector(
-                      onTap: () => _selectLogo(context),
-                      child: Stack(
-                        alignment: AlignmentDirectional.center,
-                        children: [
-                          logoId != null
-                              ? ImagePath(
-                                  bucket: 'group_logos',
-                                  imageId: logoId!,
-                                  isCircular: true,
-                                  size: 100)
-                              : Container(
-                                  height: 100,
-                                  width: 100,
-                                  decoration: const BoxDecoration(
-                                      color: htSolid2, shape: BoxShape.circle),
-                                  child: const Icon(Icons.group,
-                                      size: 70, color: htSolid5),
-                                ),
-                          Container(
-                              height: 100,
-                              width: 100,
-                              decoration: const BoxDecoration(
-                                  color: htTrans3, shape: BoxShape.circle),
-                              child: const Icon(Icons.edit,
-                                  size: 50, color: htSolid5))
-                        ],
-                      )),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 10.0, bottom: 15),
-                  child: Column(
-                    children: [
-                      Text(
-                          widget.grp.admin == sc.username.value
-                              ? 'Manage Group'
-                              : 'View Members',
-                          style: defaultTextStyle.copyWith(fontSize: 25)),
-                      if (widget.grp.admin == sc.username.value)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: GestureDetector(
+                        onTap: () => _selectLogo(context),
+                        child: Stack(
+                          alignment: AlignmentDirectional.center,
                           children: [
-                            InterfaceButton(
-                              label: 'Delete Group',
-                              onPressed: () => showAlertDialog(
-                                context: context,
-                                title: 'Confirm Group Deletion',
-                                msg:
-                                    'Are you sure you want to delete the group "${widget.grp.name}"?',
-                                onOk: () => removeGroup(),
-                              ),
-                              icon: Icons.delete,
-                            ),
+                            logoId != null
+                                ? ImagePath(
+                                    bucket: 'group_logos',
+                                    imageId: logoId!,
+                                    isCircular: true,
+                                    size: 100)
+                                : Container(
+                                    height: 100,
+                                    width: 100,
+                                    decoration: const BoxDecoration(
+                                        color: htSolid2,
+                                        shape: BoxShape.circle),
+                                    child: const Icon(Icons.group,
+                                        size: 70, color: htSolid5),
+                                  ),
+                            Container(
+                                height: 100,
+                                width: 100,
+                                decoration: const BoxDecoration(
+                                    color: htTrans3, shape: BoxShape.circle),
+                                child: const Icon(Icons.edit,
+                                    size: 50, color: htSolid5))
                           ],
-                        )
-                    ],
+                        )),
                   ),
-                ),
-                loadingGroup
-                    ? const Expanded(
-                        child: GeneralLoading(
-                          artifacts: 'Members',
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        child: Column(
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0, bottom: 15),
+                    child: Column(
+                      children: [
+                        Text(
+                            widget.grp.admin == sc.username.value
+                                ? 'Manage Group'
+                                : 'View Members',
+                            style: defaultTextStyle.copyWith(fontSize: 25)),
+                        if (widget.grp.admin == sc.username.value)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              InterfaceButton(
+                                label: 'Delete Group',
+                                onPressed: () => showAlertDialog(
+                                  context: context,
+                                  title: 'Confirm Group Deletion',
+                                  msg:
+                                      'Are you sure you want to delete the group "${widget.grp.name}"?',
+                                  onOk: () => removeGroup(),
+                                ),
+                                icon: Icons.delete,
+                              ),
+                            ],
+                          )
+                      ],
+                    ),
+                  ),
+                  loadingGroup
+                      ? const Padding(
+                          padding: EdgeInsets.only(top: 40.0),
+                          child: GeneralLoading(
+                            artifacts: 'Members',
+                            bgColor: Colors.transparent,
+                          ),
+                        )
+                      : Column(
                           children: [
                             if (widget.grp.admin == sc.username.value)
                               MVTextInput(
@@ -696,15 +785,26 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
                                         grp: widget.grp,
                                         action: addMember,
                                       )
-                                : GroupList(
-                                    title: 'Members',
-                                    members: members,
-                                    action: removeMember,
-                                    grp: widget.grp),
+                                : Column(
+                                    children: [
+                                      if (requests.isNotEmpty)
+                                        GroupList(
+                                            title: 'Join Requests',
+                                            members: requests,
+                                            action: acceptRequest,
+                                            counterAction: denyRequest,
+                                            grp: widget.grp),
+                                      GroupList(
+                                          title: 'Members',
+                                          members: members,
+                                          action: removeMember,
+                                          grp: widget.grp),
+                                    ],
+                                  ),
                           ],
                         ),
-                      ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -727,10 +827,12 @@ class GroupList extends StatelessWidget {
       required this.action,
       required this.members,
       required this.grp,
-      required this.title})
+      required this.title,
+      this.counterAction})
       : super(key: key);
 
   final Function(String) action;
+  final Function(String)? counterAction;
   final List<UserProfile> members;
   final String title;
   final Group grp;
@@ -755,6 +857,26 @@ class GroupList extends StatelessWidget {
                   title: 'Confirm Member Removal',
                   msg:
                       'Are you sure you want to remove "${p.name}" from the group "${grp.name}"?',
+                  onOk: () => action(p.username),
+                ),
+              );
+            } else if (title == 'Join Requests') {
+              return GroupMemberTile(
+                profile: p,
+                group: grp,
+                actionName: 'Accept',
+                counterFunc: () => showAlertDialog(
+                  context: context,
+                  title: 'Deny Member Request',
+                  msg:
+                      'Are you sure you want to reject "${p.name}"\'s request into the group "${grp.name}"?',
+                  onOk: () => counterAction!(p.username),
+                ),
+                actionFunc: () => showAlertDialog(
+                  context: context,
+                  title: 'Accept Member Request',
+                  msg:
+                      'Are you sure you want to accept "${p.name}"\'s request into the group "${grp.name}"?',
                   onOk: () => action(p.username),
                 ),
               );
@@ -804,6 +926,7 @@ class GroupMemberTile extends StatelessWidget {
     super.key,
     required this.profile,
     this.actionFunc,
+    this.counterFunc,
     this.actionName = 'Remove',
     required this.group,
   });
@@ -812,6 +935,7 @@ class GroupMemberTile extends StatelessWidget {
   final Group group;
   final String actionName;
   final Function()? actionFunc;
+  final Function()? counterFunc;
 
   final SessionController sc = Get.find<SessionController>();
 
@@ -866,13 +990,29 @@ class GroupMemberTile extends StatelessWidget {
             ),
             if (group.admin == sc.username.value &&
                 sc.username.value != profile.username)
-              InterfaceButton(
-                  onPressed: actionFunc,
-                  label: actionName,
-                  icon: actionName == 'Add'
-                      ? Icons.person_add
-                      : Icons.delete_outline,
-                  alt: true),
+              actionName == 'Accept'
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        InterfaceButton(
+                          onPressed: actionFunc,
+                          label: actionName,
+                          icon: Icons.check_outlined,
+                        ),
+                        InterfaceButton(
+                            onPressed: counterFunc,
+                            label: 'Deny',
+                            icon: Icons.close,
+                            alt: true),
+                      ],
+                    )
+                  : InterfaceButton(
+                      onPressed: actionFunc,
+                      label: actionName,
+                      icon: actionName == 'Add'
+                          ? Icons.person_add
+                          : Icons.delete_outline,
+                      alt: true),
           ],
         ),
       ),
