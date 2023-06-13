@@ -481,10 +481,11 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
     }
   }
 
-  void loadMembers() async {
+  Future loadMembers() async {
     // set group logo
     setState(() {
       logoId = widget.grp.logo;
+      loadingGroup = true;
     });
 
     // get group member profiles
@@ -500,6 +501,15 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
     });
   }
 
+  void showMembers() {
+    gr.clear();
+
+    // reset to group members listing
+    setState(() {
+      mode = 'members';
+    });
+  }
+
   void removeMember(String uname) async {
     List<String> newMembers = widget.grp.members!.cast<String>();
     newMembers.remove(uname);
@@ -507,14 +517,14 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
     // update details
     await sc.updateGroup(
         groupId: widget.grp.id,
-        newDetails: {'dstEntities': newMembers}).then((_) {
+        newDetails: {'dstEntities': newMembers}).then((_) async {
       // update state
       setState(() {
         loadingGroup = true;
       });
 
       // reload members
-      loadMembers();
+      await loadMembers();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -535,14 +545,17 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
     // update details
     await sc.updateGroup(
         groupId: widget.grp.id,
-        newDetails: {'dstEntities': allMembers}).then((_) {
+        newDetails: {'dstEntities': allMembers}).then((_) async {
       // update state
       setState(() {
         loadingGroup = true;
       });
 
       // reload members
-      loadMembers();
+      await loadMembers();
+
+      // reset to members
+      showMembers();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -647,14 +660,7 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
                                 hintText: 'New Member',
                                 suffixWidget: gr.text.isNotEmpty
                                     ? IconButton(
-                                        onPressed: () {
-                                          gr.clear();
-
-                                          // reset to group members listing
-                                          setState(() {
-                                            mode = 'members';
-                                          });
-                                        },
+                                        onPressed: showMembers,
                                         icon: const Icon(Icons.cancel))
                                     : null,
                                 controller: gr,

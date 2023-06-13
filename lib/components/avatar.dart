@@ -73,9 +73,7 @@ class _AvatarSegmentState extends State<AvatarSegment>
     with WidgetsBindingObserver {
   final SessionController sc = Get.find<SessionController>();
   late Timer _timerOnline;
-  UserProfile profile = UserProfile(username: unknownBastard);
   bool online = false;
-  bool loadingProfile = true;
 
   @override
   void initState() {
@@ -88,20 +86,6 @@ class _AvatarSegmentState extends State<AvatarSegment>
       // check online after period
       _timerOnline = Timer.periodic(const Duration(seconds: 60), onlineStatus);
     }
-
-    WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => postInit());
-  }
-
-  void postInit() async {
-    // update profile
-    UserProfile p = await sc.getProfile(
-      uname: widget.userProfile.username,
-    );
-    setState(() {
-      profile = p;
-      loadingProfile = false;
-    });
   }
 
   void onlineStatus(_) async =>
@@ -145,34 +129,19 @@ class _AvatarSegmentState extends State<AvatarSegment>
             clipBehavior: Clip.antiAliasWithSaveLayer,
             child: Stack(
               children: [
-                loadingProfile
-                    ? SizedBox(
+                widget.userProfile.avatar.isNotEmpty
+                    ? ImagePath(
+                        bucket: 'profile_avatars',
+                        imageId: widget.userProfile.avatar,
+                        size: widget.size,
+                        isCircular: widget.isCircular,
+                      )
+                    : Image.asset(
+                        'assets/images/user.png',
                         height: widget.size,
                         width: widget.size,
-                        child: Center(
-                          child: SizedBox(
-                            height: widget.size / 3,
-                            width: widget.size / 3,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 3,
-                              color: htSolid5,
-                            ),
-                          ),
-                        ),
-                      )
-                    : profile.avatar.isNotEmpty
-                        ? ImagePath(
-                            bucket: 'profile_avatars',
-                            imageId: profile.avatar,
-                            size: widget.size,
-                            isCircular: widget.isCircular,
-                          )
-                        : Image.asset(
-                            'assets/images/user.png',
-                            height: widget.size,
-                            width: widget.size,
-                            fit: BoxFit.contain,
-                          ),
+                        fit: BoxFit.contain,
+                      ),
                 if (online)
                   Positioned(
                       bottom: 4,
