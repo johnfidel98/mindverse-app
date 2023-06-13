@@ -26,7 +26,7 @@ def main(req, res):
     
     <p>I hope this email finds you well. {payload["client"]} invited you to to join us at MindVerse. You can download the app from the link below!</p>
 
-    <a href="">https://huawei</a>
+    <a href="https://appgallery.huawei.com/app/C108490715">https://appgallery.huawei.com/app/C108490715</a>
     
     <p>If you have any questions or need further assistance, please feel free to reach out to me. I'll be happy to help!</p>
     <p>Thanks and have a great day.</p>
