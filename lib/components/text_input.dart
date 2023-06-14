@@ -239,9 +239,6 @@ class _ChatInputBarState extends State<ChatInputBar>
     }
 
     await cc.postMessage(ses: sc, data: uploadData).then((mDoc) {
-      // add message to messages
-      cc.addMessage(Message.fromDoc(doc: mDoc, profile: profile));
-
       // clean message
       ec.text = '';
 
@@ -290,6 +287,7 @@ class _ChatInputBarState extends State<ChatInputBar>
     // update state
     setState(() {
       uploadedMedia = ui;
+      isAttaching = true;
     });
   }
 
@@ -412,9 +410,9 @@ class _ChatInputBarState extends State<ChatInputBar>
                 textStyle: const TextStyle(fontSize: 18, height: 1.7)),
             prefixIcon: Material(
               child: IconButton(
-                onPressed: onAttach,
-                icon: Icon(
-                  isAttaching ? Icons.expand_more : Icons.expand_less,
+                onPressed: _selectImage,
+                icon: const Icon(
+                  Icons.photo,
                   color: htSolid5,
                 ),
               ),

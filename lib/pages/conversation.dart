@@ -99,7 +99,7 @@ class _ConversationPageState extends State<ConversationPage>
         Map msg = response.payload;
 
         // check message destined to me
-        if (msg['entitiesId'] == sc.username.value) {
+        if (msg['entitiesId'] == widget.entityId) {
           // get owner profle
           UserProfile owner = await sc.getProfile(uname: msg['sourceId']);
 
@@ -259,48 +259,45 @@ class _ConversationPageState extends State<ConversationPage>
                         ? const GeneralLoading(
                             artifacts: 'Messages',
                           )
-                        : GetBuilder<ChatController>(builder: (_) {
-                            return ListView.builder(
-                              controller: _scrollController,
-                              reverse: true,
-                              itemCount: cc.messages.length,
-                              itemBuilder: (context, index) {
-                                Message messageData = cc.messages[index];
-                                var msgUser = messageData.profile.username;
-                                var currentUser = sc.username.value;
-                                return Column(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        left:
-                                            msgUser == currentUser ? 20.0 : 5.0,
-                                        right:
-                                            msgUser == currentUser ? 5.0 : 20.0,
-                                      ),
-                                      child: Card(
-                                        margin: const EdgeInsets.only(
-                                            top: 15.0, bottom: 2),
-                                        color: msgUser == currentUser
-                                            ? htSolid1
-                                            : Colors.grey[100],
-                                        elevation: 2,
-                                        child: ConversationComponent(
-                                          messageData: messageData,
-                                          grp: groupData,
-                                        ),
+                        : ListView.builder(
+                            controller: _scrollController,
+                            reverse: true,
+                            itemCount: cc.messages.length,
+                            itemBuilder: (context, index) {
+                              Message messageData = cc.messages[index];
+                              var msgUser = messageData.profile.username;
+                              var currentUser = sc.username.value;
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      left: msgUser == currentUser ? 20.0 : 5.0,
+                                      right:
+                                          msgUser == currentUser ? 5.0 : 20.0,
+                                    ),
+                                    child: Card(
+                                      margin: const EdgeInsets.only(
+                                          top: 15.0, bottom: 2),
+                                      color: msgUser == currentUser
+                                          ? htSolid1
+                                          : Colors.grey[100],
+                                      elevation: 2,
+                                      child: ConversationComponent(
+                                        messageData: messageData,
+                                        grp: groupData,
                                       ),
                                     ),
-                                    index % 8 == 0
-                                        ? const Padding(
-                                            padding: EdgeInsets.only(top: 15.0),
-                                            child: AdaptiveAdvert(),
-                                          )
-                                        : const SizedBox(),
-                                  ],
-                                );
-                              },
-                            );
-                          }),
+                                  ),
+                                  index % 8 == 0
+                                      ? const Padding(
+                                          padding: EdgeInsets.only(top: 15.0),
+                                          child: AdaptiveAdvert(),
+                                        )
+                                      : const SizedBox(),
+                                ],
+                              );
+                            },
+                          ),
                   ),
                 ),
                 if (_isGroup)
@@ -347,6 +344,7 @@ class _ConversationComponentState extends State<ConversationComponent>
   late Timer _timerMessageState;
 
   bool seen = false;
+  bool isDisposed = false;
 
   @override
   void initState() {
@@ -393,20 +391,24 @@ class _ConversationComponentState extends State<ConversationComponent>
           if (doc.data['toGroup']) {
             // use minus 1 as msg owner doesn't mark read
             if (widget.grp.members!.length - 1 == doc.data['isRead'].length) {
-              // mark read
-              setState(() {
-                seen = true;
-              });
+              if (!isDisposed) {
+                // mark read
+                setState(() {
+                  seen = true;
+                });
+              }
 
               // cancel timer
               _timerMessageState.cancel();
             }
           } else {
             if (doc.data['isRead'].length > 0) {
-              // mark read
-              setState(() {
-                seen = true;
-              });
+              if (!isDisposed) {
+                // mark read
+                setState(() {
+                  seen = true;
+                });
+              }
 
               // cancel timer
               _timerMessageState.cancel();
@@ -532,7 +534,9 @@ class _ConversationComponentState extends State<ConversationComponent>
 
   @override
   void dispose() {
-    // dispose message timer
+    // cleanup
+    isDisposed = true;
+
     if (_timerMessageState.isActive) {
       _timerMessageState.cancel();
     }

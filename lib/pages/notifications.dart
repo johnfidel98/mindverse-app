@@ -55,12 +55,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
             ),
           );
 
-  void dismissAll() async {
+  void dismissAll() {
     // dismiss all notifications
-    int i = 0;
+    sc.clearNotifications();
     for (MVNotification n in sc.notifications) {
-      await dismissNotification(i, n);
-      i += 1;
+      sc.removeNotificationDoc(docId: n.id);
     }
   }
 

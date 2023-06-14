@@ -353,6 +353,9 @@ class SessionController extends GetxController {
         notifications.refresh();
       });
 
+  Future removeNotificationDoc({required String docId}) async =>
+      await deleteDoc(collectionName: 'notifications', docId: docId);
+
   Future setUserDetails() => _account.get().then((account) async {
         // update user details
         userId.value = account.$id;
@@ -391,6 +394,8 @@ class SessionController extends GetxController {
   setImage(String img) => image.value = img;
 
   setName(String nme) => name.value = nme;
+
+  clearNotifications() => notifications.clear();
 
   getRealtime() => _realtime;
 

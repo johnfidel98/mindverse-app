@@ -47,7 +47,7 @@ class _RoamPageState extends State<RoamPage> {
           ? sc
               .getAtlas(tag: ec.text)
               .then((_) => setState(() => search = ec.text))
-          : null;
+          : _resetTags();
 
   void _resetTags() => sc.getAtlas().then((_) {
         // reset search

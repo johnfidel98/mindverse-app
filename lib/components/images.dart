@@ -208,6 +208,7 @@ class _DisplayImageState extends State<DisplayImage>
     with WidgetsBindingObserver {
   final SessionController sc = Get.find<SessionController>();
   List<ImageProvider> imageObjects = [];
+  bool loadingImages = true;
 
   @override
   void initState() {
@@ -222,13 +223,13 @@ class _DisplayImageState extends State<DisplayImage>
     for (String img in widget.images) {
       Uint8List imageBytes =
           await sc.getFile(bucket: 'chat_images', fileId: img);
-      ImageProvider imageProvider = MemoryImage(imageBytes);
-      imp.add(imageProvider);
+      imp.add(MemoryImage(imageBytes));
     }
 
     // update state
     setState(() {
       imageObjects = imp;
+      loadingImages = false;
     });
   }
 
@@ -253,7 +254,17 @@ class _DisplayImageState extends State<DisplayImage>
           );
         },
         child: imageObjects.isEmpty
-            ? const SizedBox()
+            ? const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                      height: 200,
+                      width: 200,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1,
+                      )),
+                ],
+              )
             : Image(image: imageObjects[widget.index], fit: BoxFit.cover));
   }
 }

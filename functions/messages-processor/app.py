@@ -114,29 +114,31 @@ def main(req, res):
                 for gUser in dGroup['dstEntities']:
                     processUser(gUser, database, payload, profilesCol, notificationsCol, dGroup)
 
-                # Atlas indexing for groups
-                for tag in tags:
-                    try:
-                        # Get current tag entry
-                        aTag = database.get_document(
-                            database_id=payload['$databaseId'], collection_id=atlasCol,
-                            document_id=tag)
-                        
-                        if payload['entitiesId'] not in aTag['entities']:
-                            newEntities = aTag['entities'] + [payload['entitiesId']]
-
-                            # Update tag
-                            database.update_document(
+                # Check if private
+                if not dGroup['isPrivate']:
+                    # Atlas indexing for groups
+                    for tag in tags:
+                        try:
+                            # Get current tag entry
+                            aTag = database.get_document(
                                 database_id=payload['$databaseId'], collection_id=atlasCol,
-                                document_id=tag, data={'entities': newEntities}
+                                document_id=tag)
+                            
+                            if payload['entitiesId'] not in aTag['entities']:
+                                newEntities = aTag['entities'] + [payload['entitiesId']]
+
+                                # Update tag
+                                database.update_document(
+                                    database_id=payload['$databaseId'], collection_id=atlasCol,
+                                    document_id=tag, data={'entities': newEntities}
+                                )
+                        except Exception:
+                            # Tag doesn't exist
+                            database.create_document(
+                                database_id=payload['$databaseId'], collection_id=atlasCol,
+                                document_id=tag,
+                                data={'entities': [payload['entitiesId']]}
                             )
-                    except Exception:
-                        # Tag doesn't exist
-                        database.create_document(
-                            database_id=payload['$databaseId'], collection_id=atlasCol,
-                            document_id=tag,
-                            data={'entities': [payload['entitiesId']]}
-                        )
             else:
                 processUser(payload['entitiesId'], database, payload, profilesCol, notificationsCol)
             return res.json({
