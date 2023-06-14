@@ -1,7 +1,7 @@
 name: mindverse
 description: A new Flutter project.
 publish_to: 'none'
-version: 0.5.0
+version: 1.0.5
 
 environment:
   sdk: '>=3.0.2 <4.0.0'

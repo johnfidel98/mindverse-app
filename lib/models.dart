@@ -91,6 +91,7 @@ class Message {
       video: doc.data['video'] ?? '',
       link: doc.data['link'] ?? '',
       readers: doc.data['isRead'].cast<String>(),
+      images: doc.data['images'].cast<String>(),
     );
   }
 
@@ -105,6 +106,7 @@ class Message {
       video: json['video'] ?? '',
       link: json['link'] ?? '',
       readers: json['isRead'].cast<String>(),
+      images: json['images'].cast<String>(),
     );
   }
 }

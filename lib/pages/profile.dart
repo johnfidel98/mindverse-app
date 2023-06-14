@@ -65,7 +65,12 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
         await sc.updateDoc(
             collectionName: 'profiles',
             docId: widget.profile.username,
-            data: {'avatar': file.$id});
+            data: {'avatar': file.$id}).then((doc) {
+          setState(() {
+            profile = UserProfile.fromDoc(doc);
+            loadingProfile = false;
+          });
+        });
 
         // update state avatar
         sc.setImage(file.$id);
@@ -135,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
                               alignment: AlignmentDirectional.center,
                               children: [
                                 AvatarSegment(
-                                  userProfile: widget.profile,
+                                  userProfile: profile,
                                   expanded: false,
                                   size: 160,
                                 ),
@@ -206,7 +211,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
                                       ],
                                     )
                                   : Text(
-                                      widget.profile.bio,
+                                      profile.bio,
                                       textAlign: TextAlign.center,
                                     ),
                             ],
