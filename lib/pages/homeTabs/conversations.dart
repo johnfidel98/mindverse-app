@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mindverse/components/ad.dart';
@@ -24,11 +26,17 @@ class ConversationsTab extends StatefulWidget {
   State<ConversationsTab> createState() => _ConversationsTabState();
 }
 
-class _ConversationsTabState extends State<ConversationsTab> {
+class _ConversationsTabState extends State<ConversationsTab>
+    with WidgetsBindingObserver {
   final SessionController sc = Get.find<SessionController>();
   final ChatController cc = Get.find<ChatController>();
 
   late final PanelController _controllerSlidePanel;
+
+  late StreamSubscription _listenerConvsersationsChanges;
+
+  bool isDisposed = false;
+  bool conversationsAvailable = false;
 
   @override
   void initState() {
@@ -36,8 +44,28 @@ class _ConversationsTabState extends State<ConversationsTab> {
 
     _controllerSlidePanel = PanelController();
 
+    _listenerConvsersationsChanges = cc.conversations.listen((cnvList) {
+      // listen to any mute event and apply changes
+      if (!isDisposed) {
+        if (cnvList.isNotEmpty && !conversationsAvailable) {
+          setState(() => conversationsAvailable = true);
+        } else if (cnvList.isEmpty && conversationsAvailable) {
+          setState(() => conversationsAvailable = false);
+        }
+      }
+    });
+
     // my last conversations
     cc.getConversations(sc: sc, username: sc.username.value);
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => postInit());
+  }
+
+  void postInit() {
+    // check current conversations
+    if (cc.conversations.isNotEmpty) {
+      setState(() => conversationsAvailable = true);
+    }
   }
 
   void createConversation() => _controllerSlidePanel.open();
@@ -48,28 +76,28 @@ class _ConversationsTabState extends State<ConversationsTab> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6.0),
-          child: Obx(
-            () => RefreshIndicator(
-              onRefresh: () =>
-                  cc.getConversations(sc: sc, username: sc.username.value),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 10.0),
-                      child: RoamCard(),
-                    ),
-                    cc.conversations.isNotEmpty
-                        ? HomeTitle(
-                            title: 'Conversations',
-                            statsWidget: getConvAction('New'),
-                          )
-                        : const SizedBox(),
-                    cc.conversations.isNotEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(bottom: 20.0),
-                            child: ListView.builder(
+          child: RefreshIndicator(
+            onRefresh: () =>
+                cc.getConversations(sc: sc, username: sc.username.value),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 10.0),
+                    child: RoamCard(),
+                  ),
+                  conversationsAvailable
+                      ? HomeTitle(
+                          title: 'Conversations',
+                          statsWidget: getConvAction('New'),
+                        )
+                      : const SizedBox(),
+                  conversationsAvailable
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 20.0),
+                          child: Obx(
+                            () => ListView.builder(
                               shrinkWrap: true,
                               physics: const ClampingScrollPhysics(),
                               itemCount: cc.conversations.length,
@@ -89,8 +117,10 @@ class _ConversationsTabState extends State<ConversationsTab> {
                                 );
                               },
                             ),
-                          )
-                        : Container(
+                          ),
+                        )
+                      : Obx(
+                          () => Container(
                             child: cc.loadingConversations.value &&
                                     !cc.firstLoadConversations.value
                                 ? const Padding(
@@ -108,8 +138,8 @@ class _ConversationsTabState extends State<ConversationsTab> {
                                     child: getConvAction('New Conversation'),
                                   ),
                           ),
-                  ],
-                ),
+                        ),
+                ],
               ),
             ),
           ),
@@ -137,6 +167,14 @@ class _ConversationsTabState extends State<ConversationsTab> {
         icon: Icons.group_add,
         onPressed: createConversation,
       );
+  @override
+  void dispose() {
+    // dispose listeners and controllers when widget is exiting
+    isDisposed = true;
+    _listenerConvsersationsChanges.cancel();
+
+    super.dispose();
+  }
 }
 
 class ConversationTile extends StatelessWidget {

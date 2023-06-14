@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mindverse/components/text.dart';
@@ -24,11 +26,15 @@ class GroupsTab extends StatefulWidget {
   State<GroupsTab> createState() => _GroupsTabState();
 }
 
-class _GroupsTabState extends State<GroupsTab> {
+class _GroupsTabState extends State<GroupsTab> with WidgetsBindingObserver {
   final SessionController sc = Get.find<SessionController>();
   final ChatController cc = Get.find<ChatController>();
 
   late final PanelController _controllerSlidePanel;
+  late StreamSubscription _listenerGroupsChanges;
+
+  bool isDisposed = false;
+  bool groupsAvailable = false;
 
   @override
   void initState() {
@@ -36,8 +42,28 @@ class _GroupsTabState extends State<GroupsTab> {
 
     _controllerSlidePanel = PanelController();
 
+    _listenerGroupsChanges = cc.groups.listen((grpList) {
+      // listen to any mute event and apply changes
+      if (!isDisposed) {
+        if (grpList.isNotEmpty && !groupsAvailable) {
+          setState(() => groupsAvailable = true);
+        } else if (grpList.isEmpty && groupsAvailable) {
+          setState(() => groupsAvailable = false);
+        }
+      }
+    });
+
     // get groups where im member
     cc.getGroups(sc: sc);
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => postInit());
+  }
+
+  void postInit() {
+    // check current groups
+    if (cc.groups.isNotEmpty) {
+      setState(() => groupsAvailable = true);
+    }
   }
 
   void openGroupCreatePanel() => _controllerSlidePanel.open();
@@ -46,7 +72,7 @@ class _GroupsTabState extends State<GroupsTab> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Obx(() => cc.groups.isNotEmpty
+        groupsAvailable
             ? RefreshIndicator(
                 onRefresh: () => cc.getGroups(sc: sc),
                 child: SingleChildScrollView(
@@ -60,45 +86,49 @@ class _GroupsTabState extends State<GroupsTab> {
                           title: 'Groups',
                           statsWidget: getGroupsAction(),
                         ),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const ClampingScrollPhysics(),
-                          itemCount: cc.groups.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            Group g = cc.groups[index];
-                            return Column(
-                              children: [
-                                GroupTile(grp: g),
-                                index % 4 == 0
-                                    ? const Padding(
-                                        padding:
-                                            EdgeInsets.symmetric(vertical: 2),
-                                        child: NativeAdvert(),
-                                      )
-                                    : const SizedBox(),
-                              ],
-                            );
-                          },
+                        Obx(
+                          () => ListView.builder(
+                            shrinkWrap: true,
+                            physics: const ClampingScrollPhysics(),
+                            itemCount: cc.groups.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              Group g = cc.groups[index];
+                              return Column(
+                                children: [
+                                  GroupTile(grp: g),
+                                  index % 4 == 0
+                                      ? const Padding(
+                                          padding:
+                                              EdgeInsets.symmetric(vertical: 2),
+                                          child: NativeAdvert(),
+                                        )
+                                      : const SizedBox(),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
               )
-            : cc.loadingGroups.value && !cc.firstLoadGroups.value
-                ? const Padding(
-                    padding: EdgeInsets.only(top: 30),
-                    child: GeneralLoading(
-                      artifacts: 'Groups',
-                    ),
-                  )
-                : EmptyMsg(
-                    lottiePath: 'assets/lottie/16952-group-working.json',
-                    title: 'Groups',
-                    message:
-                        'Connect and discuss with several like minded people!',
-                    child: getGroupsAction(),
-                  )),
+            : Obx(
+                () => cc.loadingGroups.value && !cc.firstLoadGroups.value
+                    ? const Padding(
+                        padding: EdgeInsets.only(top: 30),
+                        child: GeneralLoading(
+                          artifacts: 'Groups',
+                        ),
+                      )
+                    : EmptyMsg(
+                        lottiePath: 'assets/lottie/16952-group-working.json',
+                        title: 'Groups',
+                        message:
+                            'Connect and discuss with several like minded people!',
+                        child: getGroupsAction(),
+                      ),
+              ),
         SlidingUpPanel(
           maxHeight: 270,
           minHeight: 0,
@@ -116,6 +146,15 @@ class _GroupsTabState extends State<GroupsTab> {
         icon: Icons.group_add,
         onPressed: openGroupCreatePanel,
       );
+
+  @override
+  void dispose() {
+    // dispose listeners and controllers when widget is exiting
+    isDisposed = true;
+    _listenerGroupsChanges.cancel();
+
+    super.dispose();
+  }
 }
 
 class GroupCreate extends StatefulWidget {
@@ -704,7 +743,7 @@ class _GroupManageState extends State<GroupManage> with WidgetsBindingObserver {
                                 decoration: const BoxDecoration(
                                     color: htTrans3, shape: BoxShape.circle),
                                 child: const Icon(Icons.edit,
-                                    size: 50, color: htSolid5))
+                                    size: 50, color: htSolid1))
                           ],
                         )),
                   ),

@@ -131,9 +131,12 @@ class ChatController extends GetxController {
           // get group index
           int ix = processedGroupIds.indexOf(grp.id);
 
-          // update group details
-          groups.removeAt(ix);
-          groups.insert(ix, grp);
+          // check for changes
+          if (groups[ix].lastMessage != grp.lastMessage) {
+            // update group details
+            groups.removeAt(ix);
+            groups.insert(ix, grp);
+          }
         }
       }
 
@@ -208,9 +211,12 @@ class ChatController extends GetxController {
           // get conversation index
           int ix = processedConversationsIds.indexOf(conv['un']);
 
-          // update conversations details
-          conversations.removeAt(ix);
-          conversations.insert(ix, conv['cn']);
+          // check for changes
+          if (conversations[ix].lastMessage != conv['cn'].lastMessage) {
+            // update conversations details
+            conversations.removeAt(ix);
+            conversations.insert(ix, conv['cn']);
+          }
         }
       }
 
