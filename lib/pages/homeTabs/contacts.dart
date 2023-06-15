@@ -56,7 +56,7 @@ class _ContactListingState extends State<ContactListing>
     super.initState();
 
     // Listen to contact database changes
-    FlutterContacts.addListener(() => processContacts());
+    FlutterContacts.addListener(processContacts);
 
     // check contacts on phone
     processContacts();
@@ -173,7 +173,9 @@ class _ContactListingState extends State<ContactListing>
 
   @override
   void dispose() {
+    // cleanup
     _isMounted = false;
+    FlutterContacts.removeListener(processContacts);
     super.dispose();
   }
 }
