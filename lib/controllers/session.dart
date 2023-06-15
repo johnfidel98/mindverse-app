@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/painting.dart' show PaintingBinding;
+
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as aw;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -74,8 +76,13 @@ class SessionController extends GetxController {
     return _account;
   }
 
-  Future login({required String email, required String password}) =>
-      _account.createEmailSession(email: email, password: password);
+  Future login({required String email, required String password}) {
+    // clear images cache
+    PaintingBinding.instance!.imageCache!.clear();
+
+    // login
+    return _account.createEmailSession(email: email, password: password);
+  }
 
   Future logout() => _account.deleteSession(sessionId: "current");
 

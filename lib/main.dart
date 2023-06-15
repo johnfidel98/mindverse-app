@@ -16,23 +16,7 @@ import 'package:mindverse/pages/roam.dart';
 import 'package:mindverse/pages/welcome.dart';
 import 'package:mindverse/theme.dart';
 
-class MVImageCache extends ImageCache {
-  @override
-  void clear() {
-    // clearing images cache!
-    super.clear();
-  }
-}
-
-class MVWidgetsBinding extends WidgetsFlutterBinding {
-  @override
-  ImageCache createImageCache() => MVImageCache();
-}
-
-void main() {
-  // clear previous session cache
-  MVWidgetsBinding();
-
+Future<void> main() async {
   // splash screen
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -64,9 +48,6 @@ void main() {
       }
     });
 
-    // path = '/roam';
-    // FlutterNativeSplash.remove();
-
     // load app
     runApp(
       MyApp(
@@ -74,6 +55,9 @@ void main() {
         profile: UserProfile(username: session.username.value),
       ),
     );
+
+    await Future.delayed(const Duration(milliseconds: 1));
+    FlutterNativeSplash.remove();
   });
 }
 

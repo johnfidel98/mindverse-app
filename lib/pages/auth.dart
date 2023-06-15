@@ -26,14 +26,6 @@ class _AuthPageState extends State<AuthPage> {
   String mode = 'signin';
 
   @override
-  void initState() {
-    super.initState();
-
-    // remove splash
-    FlutterNativeSplash.remove();
-  }
-
-  @override
   void dispose() {
     // other dispose methods
     ec.dispose();

@@ -1,15 +1,10 @@
 name: mindverse
 description: A new Flutter project.
 publish_to: 'none'
-version: 1.2.5
+version: 1.2.6
 
 environment:
   sdk: '>=3.0.2 <4.0.0'
-
-flutter_native_splash:
-  color: "#ececec"
-  image: mindVerse.png
-  android_gravity: top
 
 dependencies:
   any_link_preview: ^3.0.0
@@ -40,6 +35,13 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+
+flutter_native_splash:
+  color: "#ececec"
+  image: assets/images/logo.png
+  color_dark: "#ececec"
+  android: true
+  android_gravity: top
 
 flutter:
   uses-material-design: true

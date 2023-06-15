@@ -33,9 +33,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    // remove splash screen
-    FlutterNativeSplash.remove();
-
     // check notifications
     sc.getNotifications();
 
