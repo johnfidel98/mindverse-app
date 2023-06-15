@@ -12,3 +12,7 @@ Kindly follow the following instructions to use the app
 
 ### Take Note
 This project run along a website that does user verification and account recoveries at this [GitHub](https://github.com/johnfidel98/mindverse-web) repo.
+
+Release command
+
+> flutter build apk --split-per-abi

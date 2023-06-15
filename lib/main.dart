@@ -16,7 +16,23 @@ import 'package:mindverse/pages/roam.dart';
 import 'package:mindverse/pages/welcome.dart';
 import 'package:mindverse/theme.dart';
 
+class MVImageCache extends ImageCache {
+  @override
+  void clear() {
+    // clearing images cache!
+    super.clear();
+  }
+}
+
+class MVWidgetsBinding extends WidgetsFlutterBinding {
+  @override
+  ImageCache createImageCache() => MVImageCache();
+}
+
 void main() {
+  // clear previous session cache
+  MVWidgetsBinding();
+
   // splash screen
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
